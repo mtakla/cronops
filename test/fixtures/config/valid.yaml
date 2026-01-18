@@ -1,0 +1,14 @@
+jobs:
+  - id: job1
+    action: copy
+    source:
+      dir: /build
+    enabled: true
+
+  - id: job2
+    action: delete
+    enabled: true
+
+  - id: job3
+    action: archive
+    enabled: true

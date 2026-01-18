@@ -1,0 +1,13 @@
+.npm
+node_modules/
+logs
+_.log
+\*.tgz
+.temp
+.cache
+.vscode-test
+.DS_Store
+tsconfig.tsbuildinfo
+build
+dist
+#data

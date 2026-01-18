@@ -1,0 +1,9 @@
+/.vscode
+/.git
+/node_modules
+/build
+/backup
+/dist
+*.config.js
+.*
+biome.json
