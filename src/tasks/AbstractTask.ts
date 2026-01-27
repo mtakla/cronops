@@ -73,8 +73,9 @@ export abstract class AbstractTask<T> implements Task {
       this.events.on("finished", cb);
    }
 
-   public onError(cb: (error: Error, errorCount: number) => void) {
-      this.events.on("error", (error: Error) => cb(error, ++this.errorCount));
+   public onError(cb: (error: Error) => void) {
+      this.errorCount++;
+      this.events.on("error", (error: Error) => cb(error));
    }
 
    public async gracefulTerminate(timeout: number = 500) {

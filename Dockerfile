@@ -4,8 +4,11 @@
 FROM node:24-alpine AS builder
 
 WORKDIR /app
-COPY . .
+
+COPY package*.json ./
 RUN npm ci
+
+COPY . .
 RUN npm run build
 RUN npm run test
 
@@ -14,56 +17,79 @@ RUN npm run test
 # -------------------------------
 FROM node:24-alpine AS production
 
-# add timezone support to alpine
-RUN apk add --no-cache tzdata
+# alpine additions 
+RUN apk add --no-cache \
+  tzdata \
+  bash \
+  curl \
+  git \
+  zip \
+  unzip \
+  rsync \
+  openssh-client \
+  jq \
+  yq \
+  miller \
+  age \
+  lua
+
+# useful tools to be added here (rebuild of docker image required), e.g.
+# - rclone
+# - python3
+
 
 # environment variables
-ENV CRONOPS_CONFIG_DIR=/config
-ENV CRONOPS_CONFIG_FILE=jobs.yaml
-ENV CRONOPS_SOURCE_ROOT=/source
-ENV CRONOPS_TARGET_ROOT=/target
-ENV CRONOPS_SOURCE_2_ROOT=/source2
-ENV CRONOPS_TARGET_2_ROOT=/target2
-ENV CRONOPS_SOURCE_3_ROOT=/source3
-ENV CRONOPS_TARGET_3_ROOT=/target3
-ENV CRONOPS_TEMP_DIR=/temp
-ENV CRONOPS_PORT=8083
-ENV NODE_ENV=production
+ENV CROPS_CONFIG_DIR=/config \
+    CROPS_CONFIG_FILE=jobs.yaml \
+    CROPS_SOURCE_ROOT=/io/source \
+    CROPS_TARGET_ROOT=/io/target \
+    CROPS_SOURCE_2_ROOT=/io/source2 \
+    CROPS_TARGET_2_ROOT=/io/target2 \
+    CROPS_SOURCE_3_ROOT=/io/source3 \
+    CROPS_TARGET_3_ROOT=/io/target3 \
+    CROPS_TEMP_DIR=/data/temp \
+    CROPS_LOG_DIR=/data/log \
+    CROPS_PORT=8083 \
+    NODE_ENV=production
 
 # create folders
-RUN mkdir -p ${CRONOPS_CONFIG_DIR}
-RUN mkdir -p ${CRONOPS_SOURCE_ROOT}
-RUN mkdir -p ${CRONOPS_TARGET_ROOT}
-RUN mkdir -p ${CRONOPS_SOURCE_2_ROOT}
-RUN mkdir -p ${CRONOPS_TARGET_2_ROOT}
-RUN mkdir -p ${CRONOPS_SOURCE_3_ROOT}
-RUN mkdir -p ${CRONOPS_TARGET_3_ROOT}
-RUN mkdir -p ${CRONOPS_TEMP_DIR}
+RUN mkdir -p \
+  ${CROPS_CONFIG_DIR} \
+  ${CROPS_SOURCE_ROOT} \
+  ${CROPS_TARGET_ROOT} \
+  ${CROPS_SOURCE_2_ROOT} \
+  ${CROPS_TARGET_2_ROOT} \
+  ${CROPS_SOURCE_3_ROOT} \
+  ${CROPS_TARGET_3_ROOT} \
+  ${CROPS_TEMP_DIR} \
+  ${CROPS_LOG_DIR}
+
+WORKDIR /app
 
 # copy essential files
-WORKDIR /app
 COPY ./config ./config
-COPY package*.json .
-COPY LICENSE .
+COPY LICENSE ./
+COPY package*.json ./
+
+# install node modules & remove cache
+RUN npm ci --omit=dev && npm cache clean --force
 
 # copy dist files from build stage
 COPY --from=builder /app/dist ./dist
 
-# install node modules 
-RUN npm ci --omit=dev
-
 # expose volumes 
-VOLUME ${CRONOPS_CONFIG_DIR}
-VOLUME ${CRONOPS_SOURCE_ROOT}
-VOLUME ${CRONOPS_TARGET_ROOT}
-VOLUME ${CRONOPS_SOURCE_2_ROOT}
-VOLUME ${CRONOPS_TARGET_2_ROOT}
-VOLUME ${CRONOPS_SOURCE_3_ROOT}
-VOLUME ${CRONOPS_TARGET_3_ROOT}
-VOLUME ${CRONOPS_TEMP_DIR}
+VOLUME ${CROPS_CONFIG_DIR} \
+       ${CROPS_SOURCE_ROOT} \
+       ${CROPS_TARGET_ROOT} \
+       ${CROPS_SOURCE_2_ROOT} \
+       ${CROPS_TARGET_2_ROOT} \
+       ${CROPS_SOURCE_3_ROOT} \
+       ${CROPS_TARGET_3_ROOT} \
+       ${CROPS_TEMP_DIR} \
+       ${CROPS_LOG_DIR}
 
 # expose port
-EXPOSE ${CRONOPS_PORT}
+EXPOSE ${CROPS_PORT}
 
 # configure healthcheck
 HEALTHCHECK --interval=5s \

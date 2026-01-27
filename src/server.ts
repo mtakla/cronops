@@ -8,12 +8,12 @@ import { fileURLToPath } from "node:url";
 import { ConfigLoader } from "./tasks/ConfigLoader.js";
 import { JobScheduler } from "./JobScheduler.js";
 import { ENV } from "./types/Options.types.js";
-import { ValidationError } from "./errors/ValidationError.js";
+import { JobError } from "./errors/JobError.js";
 import type { Config, Job } from "./types/Config.types.js";
-import type { JobRunnerResult } from "./types/Task.types.js";
+import type { RunnerResult } from "./types/Task.types.js";
 
 // helper
-const plural = (n: number) => (n > 1 ? "s" : "");
+const plural = (noun: string, n: number) => `${n > 0 ? n : "no"} ${noun}${n !== 1 ? "s" : ""}`;
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /**
@@ -66,7 +66,7 @@ export async function start() {
    });
 
    jobScheduler.onReady((jobCount, rescheduled) => {
-      if (jobCount) console.log(`🟢 ${jobCount} job${plural(jobCount)} ${rescheduled ? "re" : ""}scheduled\n`);
+      if (jobCount) console.log(`🟢 ${plural("job", jobCount)} ${rescheduled ? "re" : ""}scheduled\n`);
       else console.log(`🟡 No jobs scheduled\n`);
       fsx.ensureFileSync("/tmp/cronops_healthy");
    });
@@ -75,23 +75,26 @@ export async function start() {
       console.log(`🕔 job [${job.id}] scheduled (${job.cron})${job.dry_run ? " 👋 DRY-RUN mode!" : ""}`);
    });
 
-   jobScheduler.onJobError((job: Job, err: Error, errCount: number) => {
-      console.error(chalk.red(`[${job.id}] ERROR (${errCount}) ${err.message}`));
+   jobScheduler.onJobError((job: Job, err: Error) => {
+      console.error(chalk.red(`[${job.id}] ERROR ${err.message}`));
    });
 
    jobScheduler.onJobActivity((job: Job, action: string, path: string, count: number) => {
       if (action === "COPIED") console.log(`[${job.id}] ⛃ COPIED → '${path}'`);
       else if (action === "DELETED") console.log(`[${job.id}] ⛃ DELETED '${path}'`);
       else if (action === "ARCHIVED") console.log(`[${job.id}] ⛃ ARCHIVED ${count} file(s) to '${path}'`);
+      else if (action === "EXECUTED") console.log(`[${job.id}] ➤➤ EXECUTED '${path}'`);
       else if (action === "PRUNED") console.log(`[${job.id}] ⛃ PRUNED target file '${path}'`);
    });
 
-   jobScheduler.onJobFinished((job: Job, stat: JobRunnerResult) => {
-      if (!job.verbose && stat.copied + stat.deleted + stat.archived > 0) {
-         if (stat.copied > 0 && stat.deleted > 0) console.log(`[${job.id}] ✔ MOVED ${stat.copied} file(s) in ${stat.durationMs}ms`);
-         else if (stat.copied > 0) console.log(`[${job.id}] ✔ COPIED ${stat.copied} file(s) in ${stat.durationMs}ms`);
-         else if (stat.deleted > 0) console.log(`[${job.id}] ✔ DELETED ${stat.deleted} file(s) in ${stat.durationMs}ms`);
-         else if (stat.archived > 0) console.log(`[${job.id}] ✔ ARCHIVED ${stat.archived} file(s) in ${stat.durationMs}ms`);
+   jobScheduler.onJobFinished((job: Job, stat: RunnerResult) => {
+      if (!job.verbose && stat.copied + stat.deleted + stat.archived + stat.executed > 0) {
+         if (stat.copied > 0 && stat.deleted > 0) console.log(`[${job.id}] ✔ MOVED ${stat.copied} in ${stat.durationMs}ms`);
+         else if (stat.copied > 0) console.log(`[${job.id}] ✔ COPIED ${plural("file", stat.copied)} in ${stat.durationMs}ms`);
+         else if (stat.deleted > 0) console.log(`[${job.id}] ✔ DELETED ${plural("file", stat.deleted)} in ${stat.durationMs}ms`);
+         else if (stat.archived > 0) console.log(`[${job.id}] ✔ ARCHIVED ${plural("file", stat.archived)} in ${stat.durationMs}ms`);
+         else if (stat.executed === 1) console.log(`[${job.id}] ✔ Command EXECUTED in ${stat.durationMs}ms`);
+         else if (stat.executed > 1) console.log(`[${job.id}] ✔ Command EXECUTED on ${plural("file", stat.executed)} in ${stat.durationMs}ms`);
       }
    });
 
@@ -135,9 +138,9 @@ export async function start() {
    // start http server
    httpServer.listen(port, () => {
       console.log(`Web-Admin API listening on port ${port} ...`);
-      console.log(chalk.gray(`⎆ to get server status, type curl -X GET http://localhost:${port}/status`));
-      console.log(chalk.gray(`⎆ to gracefully terminate server, type curl -X POST http://localhost:${port}/terminate`));
-      console.log(chalk.gray(`⎆ to trigger jobs manually, type curl -X POST http://localhost:${port}/trigger/{job-id}`));
+      console.log(chalk.gray(`⎆ to get server status, type           curl -X GET http://localhost:${port}/status`));
+      console.log(chalk.gray(`⎆ to trigger a job manually, type      curl -X POST http://localhost:${port}/trigger/{job-id}`));
+      console.log(chalk.gray(`⎆ to gracefully terminate server,type  curl -X POST http://localhost:${port}/terminate`));
    });
 
    // schedule config loader, load config & schedule jobs
@@ -159,7 +162,7 @@ function validateConfig(config: Config, scheduler: JobScheduler): void {
          scheduler.validateJob(job);
          validJobs.push(job);
       } catch (error) {
-         const issue = error instanceof ValidationError ? error.reason : String(error);
+         const issue = error instanceof JobError ? error.message : String(error);
          console.log(chalk.yellow(`WARNING: Job '${job.id}' skipped. Reason: ${issue}`));
       }
    }

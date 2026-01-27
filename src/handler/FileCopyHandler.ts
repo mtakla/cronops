@@ -1,6 +1,5 @@
-import type { Stats } from "fs-extra";
-import type { ActionHandler, RunnerContext } from "../types/Task.types.js";
-import { AbstractFileHandler } from "./AbstractFileHandler.js";
+import type { ActionHandler, RunnerContext, FileHistory } from "../types/Task.types.js";
+import { AbstractHandler } from "./AbstractHandler.js";
 import type { Job } from "../types/Config.types.js";
 
 /**
@@ -10,25 +9,22 @@ import type { Job } from "../types/Config.types.js";
  * - ability to prune copied file in target dir after specified retention time
  * - *dry-run*: files are copied to a temporary folder
  */
-export class FileCopyHandler extends AbstractFileHandler implements ActionHandler {
-   public readonly isFileHandler = true;
-   public readonly isGlobalHandler = false;
-   public readonly useFileLog = true;
-
+export class FileCopyHandler extends AbstractHandler implements ActionHandler {
+   /**
+    * Validate job against action handler requirements
+    * @throws JobError
+    */
    override validateJob(job: Job) {
       super.assertSourceDirExist(job);
       super.assertTargetConfigExists(job);
    }
 
-   public override async processBeforeFiles(ctx: RunnerContext, entries: [string]): Promise<void> {
-      await super.prepareTargetDirs(ctx, entries);
-   }
-
-   public override async processFile(ctx: RunnerContext, fileEntry: string, stats: Stats): Promise<void> {
-      super.copySourceFile(ctx, fileEntry, stats);
-   }
-
-   public override async processAfterFiles(ctx: RunnerContext): Promise<void> {
-      super.setTargetDirPermissions(ctx);
+   public override async processFiles(ctx: RunnerContext, entries: string[], fileHistory: FileHistory): Promise<void> {
+      if (entries.length > 0) {
+         await super.createTargetDirs(ctx, entries);
+         await super.processSources(ctx, entries, fileHistory, true, this.copyOrMoveFile);
+         await super.setTargetDirPermissions(ctx);
+      }
+      await super.cleanup(ctx, fileHistory);
    }
 }

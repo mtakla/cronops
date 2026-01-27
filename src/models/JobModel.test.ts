@@ -52,21 +52,6 @@ describe(JobModel.name, () => {
       expect(job.enabled).toBe(false);
    });
 
-   it("type properties should work", () => {
-      const job = new JobModel({ id: "testjob", action: "copy" });
-      expect(job.isCopy).toBe(true);
-      expect(job.isMove).toBe(false);
-      expect(job.isDelete).toBe(false);
-      expect(job.isArchive).toBe(false);
-      job.action = "move";
-      expect(job.isCopy).toBe(false);
-      expect(job.isMove).toBe(true);
-      job.action = "delete";
-      expect(job.isDelete).toBe(true);
-      job.action = "archive";
-      expect(job.isArchive).toBe(true);
-   });
-
    it("sourceIncludes property should return correct values", () => {
       const job1 = new JobModel({ id: "testjob1", action: "copy" }, { source: { includes: ["**"] } });
       expect(job1.sourceIncludes).toEqual(["**"]); // default

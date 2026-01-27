@@ -3,7 +3,7 @@ import { JobRunner } from "./tasks/JobRunner.js";
 import { JobModel } from "./models/JobModel.js";
 import { JobRunnerSetup } from "./models/JobRunnerSetup.js";
 import type { Config, Defaults, Job } from "./types/Config.types.js";
-import type { JobRunnerResult } from "./types/Task.types.js";
+import type { RunnerResult } from "./types/Task.types.js";
 import type { RunnerOptions } from "./types/Options.types.js";
 
 export class JobScheduler {
@@ -48,7 +48,7 @@ export class JobScheduler {
     * Schedules a single job
     * @param job job definition
     * @param defaults defaults to use if not defined in job definition
-    * @throws ValidationError if job definition is not valid
+    * @throws JobError if job definition is not valid
     * @throws Error if job is already scheduled or job is not enabled
     */
    public scheduleJob(job: Job, defaults: Defaults = {}) {
@@ -63,9 +63,9 @@ export class JobScheduler {
       // register events
       task.onScheduled(() => this.events.emit("job-scheduled", job));
       task.onStarted(() => this.events.emit("job-started", job));
-      task.onFinished((stat: JobRunnerResult) => this.events.emit("job-finished", job, stat));
+      task.onFinished((stat: RunnerResult) => this.events.emit("job-finished", job, stat));
       task.onActivity((activity: string, path: string, count?: number) => this.events.emit("job-activity", job, activity, path, count));
-      task.onError((err: Error, errCount: number) => this.events.emit("job-error", job, err, errCount));
+      task.onError((err: Error) => this.events.emit("job-error", job, err));
 
       // start scheduler for job
       task.schedule();
@@ -118,7 +118,7 @@ export class JobScheduler {
     * Emitted if the job has been finished
     * @param cb callback
     */
-   public onJobFinished(cb: (job: Job, stat: JobRunnerResult) => void) {
+   public onJobFinished(cb: (job: Job, stat: RunnerResult) => void) {
       this.events.on("job-finished", cb);
    }
 
@@ -140,7 +140,7 @@ export class JobScheduler {
     * Emitted if any error occurred during job execution
     * @param cb callback
     */
-   public onJobError(cb: (job: Job, err: Error, errCount: number) => void) {
+   public onJobError(cb: (job: Job, err: Error) => void) {
       this.events.on("job-error", cb);
    }
 }

@@ -9,7 +9,7 @@ import type { LoaderOptions, RunnerOptions } from "./types/Options.types.js";
 // type exports
 export type { LoaderOptions, RunnerOptions } from "./types/Options.types.js";
 export type { Config, Job, Defaults } from "./types/Config.types.js";
-export type { JobRunnerResult } from "./types/Task.types.js";
+export type { RunnerResult } from "./types/Task.types.js";
 
 // export function to create config loader instances
 export function createConfigLoader(options: LoaderOptions = {}): ConfigLoader {

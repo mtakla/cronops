@@ -1,5 +1,6 @@
-/.vscode
 /.git
+/.github
+/.vscode
 /node_modules
 /build
 /backup

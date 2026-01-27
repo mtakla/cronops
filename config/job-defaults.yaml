@@ -1,0 +1,14 @@
+source:
+  includes:
+    - "**/*"
+  excludes:
+    - "**/*~"
+    - "**/*.git"
+    - "**/*.svn"
+    - "**/*.part"
+    - "**/*.download"
+    - "**/*.crdownload"
+    - "**/*.tmp"
+target:
+  permissions:
+    owner: "1000:1000"

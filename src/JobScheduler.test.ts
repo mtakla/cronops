@@ -1,13 +1,22 @@
-import { remove } from "fs-extra";
+import { join, resolve } from "node:path";
+import { emptyDir, ensureDir } from "fs-extra";
 import { JobScheduler } from "./JobScheduler.js";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { JobRunnerSetup } from "./models/JobRunnerSetup.js";
+import { JobError } from "./errors/JobError.js";
 import type { Config } from "./types/Config.types.js";
-import { ValidationError } from "./errors/ValidationError.js";
+
+const workDir = resolve("./build/test/JobScheduler");
 
 const setup = new JobRunnerSetup({
-   sourceRoot: "test/fixtures",
-   targetRoot: "build/test/JobScheduler",
+   sourceRoot: "./test/fixtures",
+   targetRoot: join(workDir, "target"),
+   logDir: workDir,
+});
+
+beforeEach(async () => {
+   await ensureDir(workDir);
+   await emptyDir(workDir);
 });
 
 describe(JobScheduler.name, () => {
@@ -46,7 +55,7 @@ describe(JobScheduler.name, () => {
       const scheduler = new JobScheduler(setup);
       const cbJobScheduled = vi.fn();
       scheduler.onJobScheduled(cbJobScheduled);
-      scheduler.scheduleJob({ id: "job1", action: "copy" });
+      scheduler.scheduleJob({ id: "job1", action: "copy", source: { dir: "/" }, target: { dir: "/" } });
       await vi.waitFor(() => {
          expect(scheduler.scheduledJobs).toBe(1);
          expect(scheduler.isJobScheduled("job1")).toBe(true);
@@ -81,11 +90,11 @@ describe(JobScheduler.name, () => {
       const scheduler = new JobScheduler(setup);
       const cbReady = vi.fn();
       scheduler.onReady(cbReady);
-      scheduler.scheduleJobs({ jobs: [{ id: "job1", action: "copy" }] });
+      scheduler.scheduleJobs({ jobs: [{ id: "job1", action: "copy", source: { dir: "/" }, target: { dir: "/" } }] });
       scheduler.scheduleJobs({
          jobs: [
-            { id: "job2", action: "copy" },
-            { id: "job3", action: "archive" },
+            { id: "job2", action: "exec", command: "git pull" },
+            { id: "job3", action: "archive", source: { dir: "/" }, target: { dir: "/" } },
          ],
       });
       await vi.waitFor(() => {
@@ -103,12 +112,11 @@ describe(JobScheduler.name, () => {
       const scheduler = new JobScheduler(setup);
       expect(() => {
          scheduler.validateJob({ id: "job", action: "move", cron: "<invalid>" });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
    });
 
    it("executeJob() should work", async () => {
-      await remove("./build/test/JobScheduler");
-      const config: Config = { jobs: [{ id: "job1", action: "copy", source: { includes: ["**/*.json"] }, verbose: true }] };
+      const config: Config = { jobs: [{ id: "job1", action: "copy", source: { includes: ["**/*.json"] }, target: { dir: "/" }, verbose: true }] };
       const scheduler = new JobScheduler(setup);
       const cbJobStarted = vi.fn();
       const cbJobFinished = vi.fn();
@@ -118,6 +126,9 @@ describe(JobScheduler.name, () => {
       scheduler.onJobStarted(cbJobStarted);
       scheduler.onJobFinished(cbJobFinished);
       scheduler.onJobError(cbJobError);
+      scheduler.onJobError((_job, err) => {
+         console.log(err);
+      });
       scheduler.onReady(() => {
          scheduler.executeJob("job1");
       });
@@ -126,7 +137,7 @@ describe(JobScheduler.name, () => {
          expect(cbJobStarted).toBeCalledTimes(1);
          expect(cbJobActivity).toBeCalledTimes(2);
          expect(cbJobStarted).toBeCalledWith(expect.objectContaining(config.jobs[0]));
-         expect(cbJobFinished).toBeCalledWith(expect.objectContaining(config.jobs[0]), expect.objectContaining({ copied: 2, tracked: 2 }));
+         expect(cbJobFinished).toBeCalledWith(expect.objectContaining(config.jobs[0]), expect.objectContaining({ copied: 2 }));
          expect(cbJobError).toBeCalledTimes(0);
          scheduler.unscheduleAll();
       });
@@ -142,7 +153,7 @@ describe(JobScheduler.name, () => {
          }).toThrow(Error);
          scheduler.executeJob("job1");
       });
-      scheduler.scheduleJobs({ jobs: [{ id: "job1", action: "copy" }] });
+      scheduler.scheduleJobs({ jobs: [{ id: "job1", action: "copy", source: {}, target: {} }] });
       await vi.waitFor(() => {
          expect(cbJobStarted).toBeCalledTimes(1);
          scheduler.unscheduleAll();
@@ -151,7 +162,7 @@ describe(JobScheduler.name, () => {
 
    it("gracefulTerminate() on scheduled job should work", async () => {
       const scheduler = new JobScheduler(setup);
-      scheduler.scheduleJobs({ jobs: [{ id: "job1", action: "archive" }] });
+      scheduler.scheduleJobs({ jobs: [{ id: "job1", action: "archive", source: {}, target: {} }] });
       await scheduler.gracefulTerminate(1000);
       expect(scheduler.isJobScheduled("job1")).toBe(false);
       expect(scheduler.scheduledJobs).toBe(0);

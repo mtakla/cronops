@@ -1,9 +1,14 @@
 import { vi, beforeEach, describe, expect, it } from "vitest";
 import { JobRunnerSetup } from "./JobRunnerSetup";
 import { join, resolve, dirname } from "node:path";
-import { ENV } from "../types/Options.types";
 import { fileURLToPath } from "node:url";
-import { ValidationError } from "../errors/ValidationError";
+import { JobError } from "../errors/JobError";
+import { ENV } from "../types/Options.types";
+import { ExecHandler } from "../handler/ExecHandler";
+import { FileCopyHandler } from "../handler/FileCopyHandler";
+import { FileMoveHandler } from "../handler/FileMoveHandler";
+import { FileDeleteHandler } from "../handler/FileDeleteHandler";
+import { FileArchiveHandler } from "../handler/FileArchiveHandler";
 
 // For testing purpose only
 const appDir = resolve(join(dirname(fileURLToPath(import.meta.url)), "..", ".."));
@@ -22,7 +27,9 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.target2Root).toBe(appDir);
       expect(setup.source3Root).toBe(appDir);
       expect(setup.target3Root).toBe(appDir);
+      expect(setup.shell).toBe(false);
       expect(setup.tempDir).toBe("/tmp/cronops");
+      expect(setup.logDir).toBe("/tmp/cronops/logs");
    });
 
    it("initialization with env variables should work", () => {
@@ -32,7 +39,9 @@ describe(JobRunnerSetup.name, () => {
       vi.stubEnv(ENV.TARGET_2_ROOT, "./foo/target2");
       vi.stubEnv(ENV.SOURCE_3_ROOT, "/foo/source3");
       vi.stubEnv(ENV.TARGET_3_ROOT, "/./foo/target3");
+      vi.stubEnv(ENV.EXEC_SHELL, "/bin/bash");
       vi.stubEnv(ENV.TEMP_DIR, "/temp");
+      vi.stubEnv(ENV.LOG_DIR, "/var/log/cronops");
       vi.stubEnv(ENV.TZ, "Europe/Berlin");
       const setup = new JobRunnerSetup();
       expect(setup.sourceRoot).toBe("/foo/source");
@@ -41,12 +50,12 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.target2Root).toBe(join(appDir, "/foo/target2"));
       expect(setup.source3Root).toBe("/foo/source3");
       expect(setup.target3Root).toBe("/foo/target3");
+      expect(setup.shell).toBe("/bin/bash");
       expect(setup.tempDir).toBe("/temp");
+      expect(setup.logDir).toBe("/var/log/cronops");
    });
 
    it("initialization with options should work", () => {
-      vi.stubEnv(ENV.SOURCE_ROOT, "<ignore-me>");
-      vi.stubEnv(ENV.TARGET_ROOT, "<ignore-me>");
       const setup = new JobRunnerSetup({
          sourceRoot: "/foo/source",
          targetRoot: "foo/target",
@@ -55,6 +64,8 @@ describe(JobRunnerSetup.name, () => {
          source3Root: "",
          target3Root: "",
          tempDir: "/temp/myapp",
+         logDir: "/var/log/cronops",
+         shell: "cmd.exe",
       });
       expect(setup.sourceRoot).toBe("/foo/source");
       expect(setup.targetRoot).toBe(join(appDir, "/foo/target"));
@@ -62,7 +73,9 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.target2Root).toBe("/target2");
       expect(setup.source3Root).toBe(appDir);
       expect(setup.target3Root).toBe(appDir);
+      expect(setup.shell).toBe("cmd.exe");
       expect(setup.tempDir).toBe("/temp/myapp");
+      expect(setup.logDir).toBe("/var/log/cronops");
    });
 
    it("resolveSourceDir() should return correct values", () => {
@@ -105,6 +118,15 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.resolveTargetDir("$2/./x")).toBe(join(appDir, "x"));
    });
 
+   it("getActionHandler() should return correct action handler", () => {
+      const setup = new JobRunnerSetup();
+      expect(setup.getActionHandler("exec")).toBeInstanceOf(ExecHandler);
+      expect(setup.getActionHandler("copy")).toBeInstanceOf(FileCopyHandler);
+      expect(setup.getActionHandler("move")).toBeInstanceOf(FileMoveHandler);
+      expect(setup.getActionHandler("delete")).toBeInstanceOf(FileDeleteHandler);
+      expect(setup.getActionHandler("archive")).toBeInstanceOf(FileArchiveHandler);
+   });
+
    it("validateJob() with valid job definition should work", () => {
       const setup = new JobRunnerSetup({ sourceRoot: "./" });
       expect(() => {
@@ -117,53 +139,46 @@ describe(JobRunnerSetup.name, () => {
       expect(() => {
          // @ts-expect-error - Ignores typescript error
          setup.validateJob({ id: "job1", action: "<unknown>" });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
    });
 
    it("validateJob() should fail due to invalid root prefix", () => {
       const setup = new JobRunnerSetup({ sourceRoot: "./" });
       expect(() => {
          setup.validateJob({ id: "job1", action: "move", source: { dir: "$" } });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
       expect(() => {
          setup.validateJob({ id: "job1", action: "move", source: { dir: "$/" } });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
       expect(() => {
          setup.validateJob({ id: "job1", action: "move", source: { dir: "$0/" } });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
       expect(() => {
          setup.validateJob({ id: "job1", action: "move", source: { dir: "$1" } });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
       expect(() => {
          setup.validateJob({ id: "job1", action: "move", source: { dir: "$2./" } });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
    });
 
    it("validateJob() should fail due to invalid cron definition", () => {
       const setup = new JobRunnerSetup({ sourceRoot: "./" });
       expect(() => {
          setup.validateJob({ id: "job1", action: "move", cron: "<invalid>" });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
    });
 
-   it("validateJob() should fail due to missing source path in filesystem", () => {
+   it("validateJob() should fail due to handler error (missing source)", () => {
+      const setup = new JobRunnerSetup({ sourceRoot: "./" });
+      expect(() => {
+         setup.validateJob({ id: "job1", action: "move" });
+      }).toThrow(JobError);
+   });
+
+   it("validateJob() should fail due to handler error (missing target)", () => {
       const setup = new JobRunnerSetup({ sourceRoot: "./" });
       expect(() => {
          setup.validateJob({ id: "job1", action: "move", source: { dir: "$1/missing-dir" } });
-      }).toThrow(ValidationError);
-   });
-
-   it("validateJob() should fail due invalid archive name", () => {
-      const setup = new JobRunnerSetup({ sourceRoot: "./" });
-      expect(() => {
-         setup.validateJob({ id: "job1", action: "archive", target: { archive_name: "$1/archive.tgz" } });
-      }).toThrow(ValidationError);
-   });
-
-   it("validateJob() should fail due to nested target dir", () => {
-      const setup = new JobRunnerSetup({ sourceRoot: "./", targetRoot: "./" });
-      expect(() => {
-         setup.validateJob({ id: "job1", action: "move" });
-      }).toThrow(ValidationError);
+      }).toThrow(JobError);
    });
 });

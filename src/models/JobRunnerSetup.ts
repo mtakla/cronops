@@ -1,9 +1,14 @@
 import cron from "node-cron";
-import fsx from "fs-extra";
-import { join, resolve, dirname, relative, sep } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { ENV, type RunnerOptions } from "../types/Options.types.js";
-import { ValidationError } from "../errors/ValidationError.js";
-import { JobSchema, type Job } from "../types/Config.types.js";
+import { JobError } from "../errors/JobError.js";
+import { JobSchema, type Job, type JobAction } from "../types/Config.types.js";
+import { ExecHandler } from "../handler/ExecHandler.js";
+import { FileCopyHandler } from "../handler/FileCopyHandler.js";
+import { FileMoveHandler } from "../handler/FileMoveHandler.js";
+import { FileArchiveHandler } from "../handler/FileArchiveHandler.js";
+import { FileDeleteHandler } from "../handler/FileDeleteHandler.js";
+import type { AbstractHandler } from "../handler/AbstractHandler.js";
 
 export class JobRunnerSetup implements RunnerOptions {
    public readonly sourceRoot: string;
@@ -12,12 +17,15 @@ export class JobRunnerSetup implements RunnerOptions {
    public readonly target2Root: string;
    public readonly source3Root: string;
    public readonly target3Root: string;
+   public readonly shell: string | boolean;
+   public readonly scriptDir: string;
    public readonly tempDir: string;
    public readonly logDir: string;
 
    // helper
    private sourceRootDirs: [string, string, string];
    private targetRootDirs: [string, string, string];
+   private handlerMap = new Map<JobAction, AbstractHandler>();
 
    constructor(options: RunnerOptions = {}) {
       this.sourceRoot = resolve(options.sourceRoot ?? process.env[ENV.SOURCE_ROOT] ?? "./");
@@ -26,44 +34,56 @@ export class JobRunnerSetup implements RunnerOptions {
       this.target2Root = resolve(options.target2Root ?? process.env[ENV.TARGET_2_ROOT] ?? "./");
       this.source3Root = resolve(options.source3Root ?? process.env[ENV.SOURCE_3_ROOT] ?? "./");
       this.target3Root = resolve(options.target3Root ?? process.env[ENV.TARGET_3_ROOT] ?? "./");
+      this.scriptDir = resolve(options.scriptDir ?? process.env[ENV.SCRIPT_DIR] ?? "./");
       this.tempDir = resolve(options.tempDir ?? process.env[ENV.TEMP_DIR] ?? "/tmp/cronops");
-      this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? "./");
+      this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? "/tmp/cronops/logs");
+      this.shell = options.shell ?? parseShellSettings(process.env[ENV.EXEC_SHELL]);
 
       // helper for quick path resolution
       this.sourceRootDirs = [this.sourceRoot, this.source2Root, this.source3Root];
       this.targetRootDirs = [this.targetRoot, this.target2Root, this.target3Root];
+
+      // register action handler
+      this.handlerMap.set("exec", new ExecHandler(this));
+      this.handlerMap.set("copy", new FileCopyHandler(this));
+      this.handlerMap.set("move", new FileMoveHandler(this));
+      this.handlerMap.set("archive", new FileArchiveHandler(this));
+      this.handlerMap.set("delete", new FileDeleteHandler(this));
    }
 
    public resolveSourceDir(relPath = "./"): string {
-      return this.resolveDir(relPath, this.sourceRootDirs);
+      return this._resolveDir(relPath, this.sourceRootDirs);
    }
 
    public resolveTargetDir(relPath = "./"): string {
-      return this.resolveDir(relPath, this.targetRootDirs);
+      return this._resolveDir(relPath, this.targetRootDirs);
+   }
+
+   public getActionHandler(action: JobAction): AbstractHandler {
+      const handler = this.handlerMap.get(action);
+      if (!handler) throw new Error(`No handler registered for action '${action}'!`);
+      return handler;
    }
 
    public validateJob(job: Job) {
       // check job schema
       const res = JobSchema.safeParse(job);
-      if (!res.success) throw new ValidationError(`Invalid job definition. ${res.error.issues[0]?.message}`, job.id, res.error.message);
+      if (!res.success) JobError.throw(job.id, `Invalid job definition. ${res.error.issues[0]?.message}`, res.error);
 
-      // check if source/target dir is valid -> throws ValidationError if not
-      this.validateDir(job.source?.dir, job.id);
-      this.validateDir(job.target?.dir, job.id);
+      // check if source/target dir is valid -> throws JobError if not
+      this._validateDir(job.source?.dir, job.id);
+      this._validateDir(job.target?.dir, job.id);
 
-      const sourceDir = this.resolveSourceDir(job.source?.dir);
-      const targetDir = this.resolveTargetDir(job.target?.dir);
-      const archiveName = job.target?.archive_name ?? "";
+      if (job.cron && !cron.validate(job.cron)) JobError.throw(job.id, `invalid cron string '${job.cron}'!`);
 
-      let issue: string | undefined;
-      if (job.cron && !cron.validate(job.cron)) issue = `invalid cron string '${job.cron}'!`;
-      else if (!fsx.pathExistsSync(sourceDir)) issue = `missing source dir '${sourceDir}'!`;
-      else if (dirname(archiveName) !== ".") issue = `target archive name '${archiveName}' should not contain path elements!`;
-      else if (["copy", "move"].includes(job.action) && !relative(sourceDir, targetDir).startsWith("..")) issue = `target directory is nested inside source`;
-      if (issue) throw new ValidationError(`Job '${job.id}' ${issue}!`, job.id, issue);
+      // get handler (throws error if action is invalid)
+      const handler = this.getActionHandler(job.action);
+
+      // delegate validation to handler
+      handler.validateJob(job);
    }
 
-   private validateDir(path: string = "./", jobId: string) {
+   private _validateDir(path: string = "./", jobId: string) {
       let issue: string | undefined;
       if (path.includes("..")) issue = "Directory traversal ('..') is not allowed!";
       else if (path.startsWith("$")) {
@@ -72,10 +92,10 @@ export class JobRunnerSetup implements RunnerOptions {
          if (!(digit > 0 && digit <= 3)) issue = "Only $1, $2, and $3 are supported as root prefixes.";
          else if (nextChar !== "" && nextChar !== sep) issue = `Prefix $${digit} must be followed by a path separator ('${sep}').`;
       }
-      if (issue) throw new ValidationError(`Job '${jobId}' ${issue}!`, jobId, issue);
+      if (issue) JobError.throw(jobId, issue);
    }
 
-   private resolveDir(relPath: string, rootDirArray: [string, string, string]): string {
+   private _resolveDir(relPath: string, rootDirArray: [string, string, string]): string {
       if (!relPath.startsWith("$")) {
          return resolve(join(rootDirArray[0], relPath));
       }
@@ -86,4 +106,12 @@ export class JobRunnerSetup implements RunnerOptions {
       // should not happen due to upfront validation (see below)
       throw new Error(`Invalid dir prefix '${relPath}'! Allowed prefixes are $1, $2, or $3, followed by '${sep}'`);
    }
+}
+
+function parseShellSettings(shellStr: string | undefined): boolean | string {
+   if (!shellStr) return false;
+   const normalized = shellStr.trim().toLowerCase();
+   if (normalized === "true") return true;
+   if (normalized === "false") return false;
+   return shellStr;
 }

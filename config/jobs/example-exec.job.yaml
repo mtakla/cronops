@@ -1,0 +1,4 @@
+action: exec
+cron: "*/5 * * * * *"
+command: "node {scriptDir}/example-script.js"
+enabled: false
