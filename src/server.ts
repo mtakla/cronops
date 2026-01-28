@@ -13,7 +13,7 @@ import type { Config, Job } from "./types/Config.types.js";
 import type { RunnerResult } from "./types/Task.types.js";
 
 // helper
-const plural = (noun: string, n: number) => `${n > 0 ? n : "no"} ${noun}${n !== 1 ? "s" : ""}`;
+const plural = (n: number, noun: string) => `${n > 0 ? n : "no"} ${noun}${n !== 1 ? "s" : ""}`;
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /**
@@ -66,7 +66,7 @@ export async function start() {
    });
 
    jobScheduler.onReady((jobCount, rescheduled) => {
-      if (jobCount) console.log(`🟢 ${plural("job", jobCount)} ${rescheduled ? "re" : ""}scheduled\n`);
+      if (jobCount) console.log(`🟢 ${plural(jobCount, "job")} ${rescheduled ? "re" : ""}scheduled\n`);
       else console.log(`🟡 No jobs scheduled\n`);
       fsx.ensureFileSync("/tmp/cronops_healthy");
    });
@@ -82,7 +82,7 @@ export async function start() {
    jobScheduler.onJobActivity((job: Job, action: string, path: string, count: number) => {
       if (action === "COPIED") console.log(`[${job.id}] ⛃ COPIED → '${path}'`);
       else if (action === "DELETED") console.log(`[${job.id}] ⛃ DELETED '${path}'`);
-      else if (action === "ARCHIVED") console.log(`[${job.id}] ⛃ ARCHIVED ${count} file(s) to '${path}'`);
+      else if (action === "ARCHIVED") console.log(`[${job.id}] ⛃ ARCHIVED ${plural(count, "file")} to '${path}'`);
       else if (action === "EXECUTED") console.log(`[${job.id}] ➤➤ EXECUTED '${path}'`);
       else if (action === "PRUNED") console.log(`[${job.id}] ⛃ PRUNED target file '${path}'`);
    });
@@ -90,11 +90,11 @@ export async function start() {
    jobScheduler.onJobFinished((job: Job, stat: RunnerResult) => {
       if (!job.verbose && stat.copied + stat.deleted + stat.archived + stat.executed > 0) {
          if (stat.copied > 0 && stat.deleted > 0) console.log(`[${job.id}] ✔ MOVED ${stat.copied} in ${stat.durationMs}ms`);
-         else if (stat.copied > 0) console.log(`[${job.id}] ✔ COPIED ${plural("file", stat.copied)} in ${stat.durationMs}ms`);
-         else if (stat.deleted > 0) console.log(`[${job.id}] ✔ DELETED ${plural("file", stat.deleted)} in ${stat.durationMs}ms`);
-         else if (stat.archived > 0) console.log(`[${job.id}] ✔ ARCHIVED ${plural("file", stat.archived)} in ${stat.durationMs}ms`);
+         else if (stat.copied > 0) console.log(`[${job.id}] ✔ COPIED ${plural(stat.copied, "file")} in ${stat.durationMs}ms`);
+         else if (stat.deleted > 0) console.log(`[${job.id}] ✔ DELETED ${plural(stat.deleted, "file")} in ${stat.durationMs}ms`);
+         else if (stat.archived > 0) console.log(`[${job.id}] ✔ ARCHIVED ${plural(stat.archived, "file")} in ${stat.durationMs}ms`);
          else if (stat.executed === 1) console.log(`[${job.id}] ✔ Command EXECUTED in ${stat.durationMs}ms`);
-         else if (stat.executed > 1) console.log(`[${job.id}] ✔ Command EXECUTED on ${plural("file", stat.executed)} in ${stat.durationMs}ms`);
+         else if (stat.executed > 1) console.log(`[${job.id}] ✔ Command EXECUTED on ${plural(stat.executed, "file")} in ${stat.durationMs}ms`);
       }
    });
 

@@ -21,11 +21,10 @@ describe(ConfigLoaderSetup.name, () => {
 
    it("initialization with env variables should work", () => {
       vi.stubEnv(ENV.CONFIG_DIR, "/foo/config");
-      vi.stubEnv(ENV.CONFIG_FILE, "foo.yaml");
       vi.stubEnv(ENV.TZ, "Europe/Berlin");
       const setup = new ConfigLoaderSetup({});
       expect(setup.configDir).toBe("/foo/config");
-      expect(setup.configFileName).toBe("foo.yaml");
-      expect(setup.configFilePath).toBe(resolve(join("/foo/config", "foo.yaml")));
+      expect(setup.configFileName).toBe("jobs.yaml");
+      expect(setup.configFilePath).toBe(resolve(join("/foo/config", "jobs.yaml")));
    });
 });

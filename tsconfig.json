@@ -5,8 +5,6 @@
       "rootDir": "./src",
       "outDir": "./dist",
       "target": "esnext",
-      "declaration": true,
-      "declarationMap": true,
 
       // Environment 
       "module": "esnext",
@@ -37,6 +35,6 @@
       "moduleDetection": "force",
       "skipLibCheck": true
    },
-   "include": ["src/**/*.ts", "src/JobValidator.js"],
+   "include": ["src/**/*.ts"],
    "exclude": ["src/**/*.test.ts"]
 }

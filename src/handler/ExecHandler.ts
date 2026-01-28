@@ -96,15 +96,10 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
    protected createVars(ctx: RunnerContext, entry?: SourceFile): { vars: Record<string, string>; env: Record<string, string> } {
       const vars = {
          jobId: ctx.job.id,
-         sourceRoot: this.setup.sourceRoot,
-         targetRoot: this.setup.targetRoot,
-         source2Root: this.setup.source2Root,
-         target2Root: this.setup.target2Root,
-         source3Root: this.setup.source3Root,
-         target3Root: this.setup.target3Root,
          sourceDir: ctx.sourceDir,
          targetDir: ctx.targetDir,
          scriptDir: this.setup.scriptDir,
+         tempDir: this.setup.tempDir,
          logDir: this.setup.logDir,
          file: "",
          fileDir: "",
@@ -125,15 +120,10 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
 
       Object.assign(env, {
          CROPS_JOB_ID: vars.jobId,
-         CROPS_SOURCE_ROOT: vars.sourceRoot,
-         CROPS_TARGET_ROOT: vars.targetRoot,
-         CROPS_SOURCE2_ROOT: vars.source2Root,
-         CROPS_TARGET2_ROOT: vars.targetRoot,
-         CROPS_SOURCE3_ROOT: vars.source2Root,
-         CROPS_TARGET3_ROOT: vars.targetRoot,
          CROPS_SOURCE_DIR: ctx.sourceDir,
          CROPS_TARGET_DIR: ctx.targetDir,
          CROPS_SCRIPT_DIR: vars.scriptDir,
+         CROPS_TEMP_DIR: vars.tempDir,
          CROPS_LOG_DIR: vars.logDir,
          CROPS_DRY_RUN: `${ctx.job.dry_run}`,
          CROPS_VERBOSE: `${ctx.job.verbose}`,
@@ -141,11 +131,11 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
 
       if (entry) {
          Object.assign(env, {
-            CRONOPS_FILE: vars.file,
-            CRONOPS_FILE_DIR: vars.fileDir,
-            CRONOPS_FILE_BASE: vars.fileBase,
-            CRONOPS_FILE_NAME: vars.fileName,
-            CRONOPS_FILE_EXT: vars.fileExt,
+            CROPS_FILE: vars.file,
+            CROPS_FILE_DIR: vars.fileDir,
+            CROPS_FILE_BASE: vars.fileBase,
+            CROPS_FILE_NAME: vars.fileName,
+            CROPS_FILE_EXT: vars.fileExt,
          });
       }
 

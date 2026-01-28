@@ -1,6 +1,7 @@
+import os from "node:os";
+import { join, resolve, dirname } from "node:path";
 import { vi, beforeEach, describe, expect, it } from "vitest";
 import { JobRunnerSetup } from "./JobRunnerSetup";
-import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JobError } from "../errors/JobError";
 import { ENV } from "../types/Options.types";
@@ -27,9 +28,10 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.target2Root).toBe(appDir);
       expect(setup.source3Root).toBe(appDir);
       expect(setup.target3Root).toBe(appDir);
+      expect(setup.tempDir).toBe(join(os.tmpdir(), "cronops"));
+      expect(setup.scriptDir).toBe(join(appDir, "config", "scripts"));
+      expect(setup.logDir).toBe(join(os.homedir(), ".cronops"));
       expect(setup.shell).toBe(false);
-      expect(setup.tempDir).toBe("/tmp/cronops");
-      expect(setup.logDir).toBe("/tmp/cronops/logs");
    });
 
    it("initialization with env variables should work", () => {

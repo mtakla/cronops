@@ -1,3 +1,4 @@
+import os from "node:os";
 import cron from "node-cron";
 import { join, resolve, sep } from "node:path";
 import { ENV, type RunnerOptions } from "../types/Options.types.js";
@@ -34,9 +35,9 @@ export class JobRunnerSetup implements RunnerOptions {
       this.target2Root = resolve(options.target2Root ?? process.env[ENV.TARGET_2_ROOT] ?? "./");
       this.source3Root = resolve(options.source3Root ?? process.env[ENV.SOURCE_3_ROOT] ?? "./");
       this.target3Root = resolve(options.target3Root ?? process.env[ENV.TARGET_3_ROOT] ?? "./");
-      this.scriptDir = resolve(options.scriptDir ?? process.env[ENV.SCRIPT_DIR] ?? "./");
-      this.tempDir = resolve(options.tempDir ?? process.env[ENV.TEMP_DIR] ?? "/tmp/cronops");
-      this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? "/tmp/cronops/logs");
+      this.tempDir = resolve(options.tempDir ?? process.env[ENV.TEMP_DIR] ?? join(os.tmpdir(), "cronops"));
+      this.scriptDir = resolve(options.scriptDir ?? "./config/scripts");
+      this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? join(os.homedir(), ".cronops"));
       this.shell = options.shell ?? parseShellSettings(process.env[ENV.EXEC_SHELL]);
 
       // helper for quick path resolution

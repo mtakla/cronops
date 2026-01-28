@@ -1,6 +1,6 @@
 {
    "name": "@mtakla/cronops",
-   "version": "0.1.1-rc1.2",
+   "version": "0.1.1-rc1.4",
    "description": "Cron-based cross-container server lifecycle management",
    "type": "module",
    "author": "nevereven",

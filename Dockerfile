@@ -17,7 +17,7 @@ RUN npm run test
 # -------------------------------
 FROM node:24-alpine AS production
 
-# alpine additions 
+# alpine useful ops additions 
 RUN apk add --no-cache \
   tzdata \
   bash \
@@ -33,41 +33,38 @@ RUN apk add --no-cache \
   age \
   lua
 
-# useful tools to be added here (rebuild of docker image required), e.g.
-# - rclone
-# - python3
-
+# more useful ops tools to be added here (rebuild of docker image required), e.g.
+# - rclone \
+# - python3 \
 
 # environment variables
 ENV CROPS_CONFIG_DIR=/config \
-    CROPS_CONFIG_FILE=jobs.yaml \
+    CROPS_LOG_DIR=/data/logs \
+    CROPS_TEMP_DIR=/data/temp \
     CROPS_SOURCE_ROOT=/io/source \
     CROPS_TARGET_ROOT=/io/target \
     CROPS_SOURCE_2_ROOT=/io/source2 \
     CROPS_TARGET_2_ROOT=/io/target2 \
     CROPS_SOURCE_3_ROOT=/io/source3 \
     CROPS_TARGET_3_ROOT=/io/target3 \
-    CROPS_TEMP_DIR=/data/temp \
-    CROPS_LOG_DIR=/data/log \
-    CROPS_PORT=8083 \
     NODE_ENV=production
 
 # create folders
 RUN mkdir -p \
   ${CROPS_CONFIG_DIR} \
+  ${CROPS_TEMP_DIR} \
+  ${CROPS_LOG_DIR} \
   ${CROPS_SOURCE_ROOT} \
   ${CROPS_TARGET_ROOT} \
   ${CROPS_SOURCE_2_ROOT} \
   ${CROPS_TARGET_2_ROOT} \
   ${CROPS_SOURCE_3_ROOT} \
-  ${CROPS_TARGET_3_ROOT} \
-  ${CROPS_TEMP_DIR} \
-  ${CROPS_LOG_DIR}
+  ${CROPS_TARGET_3_ROOT}
 
 WORKDIR /app
 
 # copy essential files
-COPY ./config ./config
+COPY ./jobs ./jobs
 COPY LICENSE ./
 COPY package*.json ./
 
@@ -79,14 +76,14 @@ COPY --from=builder /app/dist ./dist
 
 # expose volumes 
 VOLUME ${CROPS_CONFIG_DIR} \
+       ${CROPS_TEMP_DIR} \
+       ${CROPS_LOG_DIR} \
        ${CROPS_SOURCE_ROOT} \
        ${CROPS_TARGET_ROOT} \
        ${CROPS_SOURCE_2_ROOT} \
        ${CROPS_TARGET_2_ROOT} \
        ${CROPS_SOURCE_3_ROOT} \
-       ${CROPS_TARGET_3_ROOT} \
-       ${CROPS_TEMP_DIR} \
-       ${CROPS_LOG_DIR}
+       ${CROPS_TARGET_3_ROOT} 
 
 # expose port
 EXPOSE ${CROPS_PORT}
