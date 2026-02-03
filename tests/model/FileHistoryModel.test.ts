@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { FileHistoryModel } from "./FileHistoryModel.js";
+import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
 
 describe(FileHistoryModel.name, () => {
    it("default constructor should work", () => {

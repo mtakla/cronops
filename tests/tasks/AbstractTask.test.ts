@@ -1,5 +1,5 @@
 import { vi, describe, it, expect } from "vitest";
-import { AbstractTask } from "./AbstractTask.js";
+import { AbstractTask } from "../../src/tasks/AbstractTask.js";
 import { setTimeout } from "node:timers/promises";
 
 class TestTask extends AbstractTask<number> {

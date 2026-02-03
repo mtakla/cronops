@@ -1,15 +1,15 @@
 import os from "node:os";
 import { join, resolve, dirname } from "node:path";
 import { vi, beforeEach, describe, expect, it } from "vitest";
-import { JobRunnerSetup } from "./JobRunnerSetup";
+import { JobRunnerSetup } from "../../src/models/JobRunnerSetup";
 import { fileURLToPath } from "node:url";
-import { JobError } from "../errors/JobError";
-import { ENV } from "../types/Options.types";
-import { ExecHandler } from "../handler/ExecHandler";
-import { FileCopyHandler } from "../handler/FileCopyHandler";
-import { FileMoveHandler } from "../handler/FileMoveHandler";
-import { FileDeleteHandler } from "../handler/FileDeleteHandler";
-import { FileArchiveHandler } from "../handler/FileArchiveHandler";
+import { JobError } from "../../src/errors/JobError";
+import { ENV } from "../../src/types/Options.types";
+import { ExecHandler } from "../../src/handlers/ExecHandler";
+import { FileCopyHandler } from "../../src/handlers/FileCopyHandler";
+import { FileMoveHandler } from "../../src/handlers/FileMoveHandler";
+import { FileDeleteHandler } from "../../src/handlers/FileDeleteHandler";
+import { FileArchiveHandler } from "../../src/handlers/FileArchiveHandler";
 
 // For testing purpose only
 const appDir = resolve(join(dirname(fileURLToPath(import.meta.url)), "..", ".."));

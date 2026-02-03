@@ -1,10 +1,10 @@
 import { EventEmitter } from "node:events";
-import { JobRunner } from "./tasks/JobRunner.js";
-import { JobModel } from "./models/JobModel.js";
-import { JobRunnerSetup } from "./models/JobRunnerSetup.js";
-import type { Job } from "./types/Config.types.js";
-import type { RunnerResult } from "./types/Task.types.js";
-import type { RunnerOptions } from "./types/Options.types.js";
+import { JobRunner } from "./JobRunner.js";
+import { JobModel } from "../models/JobModel.js";
+import { JobRunnerSetup } from "../models/JobRunnerSetup.js";
+import type { Job } from "../types/Config.types.js";
+import type { RunnerResult } from "../types/Task.types.js";
+import type { RunnerOptions } from "../types/Options.types.js";
 
 export class JobScheduler {
    protected events = new EventEmitter();

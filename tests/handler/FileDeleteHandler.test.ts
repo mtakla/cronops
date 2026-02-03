@@ -1,20 +1,19 @@
 import { join, resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { JobRunnerSetup } from "../models/JobRunnerSetup.js";
-import { JobRunnerContext } from "../models/JobRunnerContext.js";
-import { JobModel } from "../models/JobModel.js";
+import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
+import { JobRunnerContext } from "../../src/models/JobRunnerContext.js";
+import { JobModel } from "../../src/models/JobModel.js";
 import { copySync, emptyDirSync, pathExistsSync } from "fs-extra";
 import { closeSync, openSync } from "node:fs";
 import { EventEmitter } from "node:stream";
-import { FileHistoryModel } from "../models/FileHistoryModel.js";
-import { JobError } from "../errors/JobError.js";
-import { FileCopyHandler } from "./FileCopyHandler.js";
-import type { Job } from "../types/Config.types.js";
+import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
+import { JobError } from "../../src/errors/JobError.js";
+import { FileDeleteHandler } from "../../src/handlers/FileDeleteHandler.js";
+import type { Job } from "../../src/types/Config.types.js";
 
-const workDir = resolve("./build/test/FileCopyHandler");
-const fixtureDir = resolve("./test/fixtures/files");
+const workDir = resolve("./build/tests/FileDeleteHandler");
+const fixtureDir = resolve("./tests/fixtures/files");
 const sourceRoot = join(workDir, "source");
-const targetRoot = join(workDir, "target");
 const events = new EventEmitter();
 
 const errMock = vi.fn();
@@ -30,63 +29,61 @@ beforeEach(() => {
    errMock.mockReset();
 });
 
-describe(FileCopyHandler.name, () => {
+describe(FileDeleteHandler.name, () => {
    it("validateJob() should work ", () => {
-      const handler = new FileCopyHandler(new JobRunnerSetup({ sourceRoot, targetRoot }));
+      const handler = new FileDeleteHandler(new JobRunnerSetup({ sourceRoot }));
       expect(() => {
-         handler.validateJob({ id: "valid-job", action: "copy", source: { dir: "/subfolder" }, target: {} });
+         handler.validateJob({ id: "valid-job", action: "delete", source: { dir: "/subfolder" } });
       }).not.toThrow(JobError);
       expect(() => {
-         handler.validateJob({ id: "missing-target-config", action: "copy", source: {} });
+         handler.validateJob({ id: "missing-source-config", action: "delete" });
       }).toThrow(JobError);
       expect(() => {
-         handler.validateJob({ id: "missing-source-dir", action: "copy", source: { dir: "unknown" } });
+         handler.validateJob({ id: "missing-source-dir", action: "delete", source: { dir: "unknown" } });
       }).toThrow(JobError);
    });
 
    it("processFiles() on no files should work", async () => {
-      const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
+      const setup = new JobRunnerSetup({ sourceRoot });
       const ctx = createRunnerContext(setup, {
          id: "no-files",
-         action: "copy",
+         action: "delete",
          source: { dir: "/" },
-         target: { dir: "/" },
       });
-      const handler = new FileCopyHandler(setup);
+      const handler = new FileDeleteHandler(setup);
       await handler.processFiles(ctx, [], new FileHistoryModel());
-      expect(pathExistsSync(join(targetRoot, "subfolder"))).toBeFalsy();
-      expect(errMock).toBeCalledTimes(0);
-      closeLog(ctx.getLogFd());
-   });
-
-   it("processFiles() on 2 existing files should work", async () => {
-      const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
-      const ctx = createRunnerContext(setup, {
-         id: "delete-two-files",
-         action: "copy",
-         source: { dir: "/" },
-         target: { dir: "/" },
-      });
-      const handler = new FileCopyHandler(setup);
-      await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json"], new FileHistoryModel());
-      expect(pathExistsSync(join(targetRoot, "subfolder", "data2.json"))).toBeTruthy();
       expect(pathExistsSync(join(sourceRoot, "subfolder", "data2.json"))).toBeTruthy();
       expect(errMock).toBeCalledTimes(0);
       closeLog(ctx.getLogFd());
    });
 
+   it("processFiles() on 2 existing files should work", async () => {
+      const setup = new JobRunnerSetup({ sourceRoot });
+      const ctx = createRunnerContext(setup, {
+         id: "delete-two-files",
+         action: "delete",
+         source: { dir: "/" },
+      });
+      expect(pathExistsSync(join(sourceRoot, "data1.json"))).toBeTruthy();
+      const handler = new FileDeleteHandler(setup);
+      await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json"], new FileHistoryModel());
+      expect(pathExistsSync(join(sourceRoot, "data1.json"))).toBeFalsy();
+      expect(pathExistsSync(join(sourceRoot, "subfolder"))).toBeFalsy();
+      expect(errMock).toBeCalledTimes(0);
+      closeLog(ctx.getLogFd());
+   });
+
    it("processFiles() on unknown file should fail", async () => {
-      const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
+      const setup = new JobRunnerSetup({ sourceRoot });
       const ctx = createRunnerContext(setup, {
          id: "error-unknown-file",
-         action: "copy",
+         action: "delete",
          source: { dir: "/" },
-         target: { dir: "/" },
       });
-      const handler = new FileCopyHandler(setup);
+      expect(pathExistsSync(join(sourceRoot, "data1.json"))).toBeTruthy();
+      const handler = new FileDeleteHandler(setup);
       await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json", "unknown"], new FileHistoryModel());
       expect(errMock).toBeCalledTimes(1);
-      expect(pathExistsSync(join(targetRoot, "subfolder", "data2.json"))).toBeTruthy();
       closeLog(ctx.getLogFd());
    });
 });

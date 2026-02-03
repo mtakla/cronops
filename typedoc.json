@@ -1,5 +1,16 @@
 {
     "$schema": "https://typedoc.org/schema.json",
-    "entryPoints": ["./src/index.ts", "./src/JobScheduler.ts", "./src/tasks/JobLoader.ts", "./src/tasks/JobRunner.ts"],
-    "out": "build/docs"
+    "entryPoints": [
+        "./src/index.ts",
+        "./src/JobScheduler.ts",
+        "./src/tasks/JobLoader.ts",
+        "./src/tasks/JobRunner.ts"
+    ],
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "out": "build/docs",
+    "sort": [
+        "alphabetical"
+    ]
 }

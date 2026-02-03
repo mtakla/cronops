@@ -1,13 +1,13 @@
 import EventEmitter from "node:events";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { JobRunnerContext } from "./JobRunnerContext.js";
-import { JobModel } from "./JobModel.js";
+import { JobRunnerContext } from "../../src/models/JobRunnerContext.js";
+import { JobModel } from "../../src/models/JobModel.js";
 import { join, resolve } from "node:path";
 import { emptyDirSync, ensureDirSync, readFileSync } from "fs-extra";
-import { JobRunnerSetup } from "./JobRunnerSetup.js";
+import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
 import { closeSync, openSync } from "node:fs";
 
-const workDir = resolve("./build/test/JobRunnerContext");
+const workDir = resolve("./build/tests/JobRunnerContext");
 const setup = new JobRunnerSetup({ sourceRoot: "/source", targetRoot: "/target" });
 
 beforeAll(() => {

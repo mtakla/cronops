@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { JobRunnerResult } from "./JobRunnerResult.js";
+import { JobRunnerResult } from "../../src/models/JobRunnerResult.js";
 
 describe("init should work", () => {
    it("constructor should work", async () => {

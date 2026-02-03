@@ -1,20 +1,20 @@
 import { join, resolve } from "node:path";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { ExecHandler } from "./ExecHandler.js";
-import { JobRunnerSetup } from "../models/JobRunnerSetup.js";
-import { JobRunnerContext } from "../models/JobRunnerContext.js";
-import { JobModel } from "../models/JobModel.js";
+import { ExecHandler } from "../../src/handlers/ExecHandler.js";
+import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
+import { JobRunnerContext } from "../../src/models/JobRunnerContext.js";
+import { JobModel } from "../../src/models/JobModel.js";
 import { emptyDirSync } from "fs-extra";
 import { closeSync, openSync } from "node:fs";
 import { EventEmitter } from "node:stream";
-import type { Job } from "../types/Config.types.js";
-import { FileHistoryModel } from "../models/FileHistoryModel.js";
-import { JobError } from "../errors/JobError.js";
+import type { Job } from "../../src/types/Config.types.js";
+import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
+import { JobError } from "../../src/errors/JobError.js";
 
-const workDir = resolve("./build/test/ExecHandler");
-const scriptsDir = resolve("./test/fixtures/scripts");
-const sourceRoot = resolve("./test/fixtures");
-const configDir = resolve("./test/fixtures");
+const workDir = resolve("./build/tests/ExecHandler");
+const scriptsDir = resolve("./tests/fixtures/scripts");
+const sourceRoot = resolve("./tests/fixtures");
+const configDir = resolve("./tests/fixtures");
 const nodeExec = process.argv[0];
 const events = new EventEmitter();
 

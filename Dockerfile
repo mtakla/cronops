@@ -17,7 +17,7 @@ RUN npm run test
 # -------------------------------
 FROM node:24-alpine AS production
 
-# alpine useful ops additions 
+# useful alpine ops addons
 RUN apk add --no-cache \
   tzdata \
   bash \

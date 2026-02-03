@@ -1,6 +1,6 @@
 {
    "name": "@mtakla/cronops",
-   "version": "0.1.1-rc2.1",
+   "version": "0.1.1-rc2.2",
    "description": "Cron-based cross-container server lifecycle management",
    "type": "module",
    "author": "nevereven",
@@ -67,12 +67,12 @@
       "check": "biome check",
       "check:fix": "biome check --write",
       "test": "vitest run",
-      "coverage": "vitest run --coverage",
-      "clean": "rm -rf dist",
-      "dev": "tsc && node ./dist/server.js",
-      "loadtest": "tsc && node ./dist/tests/loadtest.js",
-      "build": "tsc",
       "docs": "typedoc",
+      "coverage": "vitest run --coverage",
+      "loadtest": "tsc && node ./dist/tests/loadtest.js",
+      "clean": "rm -rf dist",
+      "build": "tsc",
+      "dev": "tsc && node ./dist/server.js",
       "start": "node ./dist/server.js",
       "docker": "docker build --output type=docker,name=cronops.tar --tag nevereven/cronops:latest --tag nevereven/cronops:0.1 ."
    }

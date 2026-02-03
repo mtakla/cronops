@@ -5,21 +5,20 @@
       "rootDir": "./src",
       "outDir": "./dist",
       "target": "esnext",
-
       // Environment 
       "module": "esnext",
       "moduleResolution": "bundler",
-      "types": ["vitest/globals", "node"],
-
+      "types": [
+         "vitest/globals",
+         "node"
+      ],
       // Outputs
       "sourceMap": false,
       "removeComments": true,
-
       // Stricter typechecking options
       "strict": true,
       "noUncheckedIndexedAccess": true,
       "exactOptionalPropertyTypes": true,
-
       // Style options
       "noImplicitReturns": true,
       "noImplicitOverride": true,
@@ -27,7 +26,6 @@
       "noUnusedParameters": true,
       "noFallthroughCasesInSwitch": true,
       "noPropertyAccessFromIndexSignature": true,
-
       // Recommended node options
       "verbatimModuleSyntax": true,
       "isolatedModules": true,
@@ -35,6 +33,10 @@
       "moduleDetection": "force",
       "skipLibCheck": true
    },
-   "include": ["src/**/*.ts"],
-   "exclude": ["src/**/*.test.ts"]
+   "include": [
+      "src/**/*.ts",
+   ],
+   "exclude": [
+      "src/**/*.test.ts"
+   ]
 }

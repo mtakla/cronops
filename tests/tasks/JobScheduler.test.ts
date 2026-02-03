@@ -1,15 +1,15 @@
 import { join, resolve } from "node:path";
 import { emptyDir, ensureDir } from "fs-extra";
-import { JobScheduler } from "./JobScheduler.js";
+import { JobScheduler } from "../../src/tasks/JobScheduler.js";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { JobRunnerSetup } from "./models/JobRunnerSetup.js";
-import { JobError } from "./errors/JobError.js";
-import type { Job } from "./types/Config.types.js";
+import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
+import { JobError } from "../../src/errors/JobError.js";
+import type { Job } from "../../src/types/Config.types.js";
 
-const workDir = resolve("./build/test/JobScheduler");
+const workDir = resolve("./build/tests/JobScheduler");
 
 const setup = new JobRunnerSetup({
-   sourceRoot: "./test/fixtures",
+   sourceRoot: "./tests/fixtures",
    targetRoot: join(workDir, "target"),
    logDir: workDir,
 });

@@ -1,4 +1,4 @@
-import { JobScheduler } from "./JobScheduler.js";
+import { JobScheduler } from "./tasks/JobScheduler.js";
 import { JobModel } from "./models/JobModel.js";
 import { JobRunnerSetup } from "./models/JobRunnerSetup.js";
 import { JobLoader } from "./tasks/JobLoader.js";
@@ -21,7 +21,7 @@ export function createJobLoader(options: LoaderOptions = {}): JobLoader {
 }
 
 /**
- * Creates a `JobScheduler` instance to managing and monitoring multiple job schedules
+ * Creates a `JobScheduler` instance to manage and monitor multiple job schedules
  * @param options runner options
  * @returns the created `JobScheduler`instance
  */
@@ -30,7 +30,7 @@ export function createJobScheduler(options: RunnerOptions = {}): JobScheduler {
 }
 
 /**
- * Creates a `JobRunner` instance that to schedule or instantly execute a single job
+ * Creates a `JobRunner` instance to schedule or execute a single job
  * @param job the job configuration
  * @param options runner options
  * @returns the created `JobRunner` instance
