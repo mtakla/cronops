@@ -6,14 +6,14 @@ import { createGzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
 import { dirname, join, sep } from "node:path";
 import type { JobRunnerSetup } from "../models/JobRunnerSetup.js";
-import type { ActionHandler, SourceFile, RunnerContext, FileHistory, HistoryEntry } from "../types/Task.types.js";
+import type { ActionHandler, SourceFile, RunnerContext, FileHistory } from "../types/Task.types.js";
 import type { Job } from "../types/Config.types.js";
 import type { PermissionModel } from "../models/PermissionModel.js";
 import { createWriteStream } from "node:fs";
 import { JobError } from "../errors/JobError.js";
 
 // promise parallelization limit for build in file handlers
-const limit = pLimit(100);
+const limit = pLimit(64);
 
 // Promise map used to manage parallelization tasks
 type PromiseMap = Map<string, Promise<void>>;
@@ -47,9 +47,8 @@ export abstract class AbstractHandler implements ActionHandler {
    protected async processSources(
       ctx: RunnerContext,
       entries: string[],
-      fileHistory: FileHistory,
-      useFileHistory: boolean = true,
-      processor?: (ctx: RunnerContext, entry: SourceFile, fileHistory: FileHistory) => Promise<void>,
+      fileHistory?: FileHistory,
+      processor?: (ctx: RunnerContext, entry: SourceFile, fileHistory?: FileHistory) => Promise<void>,
    ) {
       const { sourceDir } = ctx;
 
@@ -62,23 +61,11 @@ export abstract class AbstractHandler implements ActionHandler {
                   // get source file meta info
                   const stats = await fsx.stat(sourcePath);
 
-                  if (!useFileHistory) {
-                     // call handler specific processor
-                     if (processor) await processor.bind(this)(ctx, { sourceEntry, sourcePath, stats }, fileHistory);
-                     return;
-                  }
+                  // if file history is used, update source entry if not already tracked
+                  const { changed } = fileHistory ? fileHistory.updateSourceEntry(sourcePath, [stats.mtimeMs, ctx.startTime]) : { changed: true };
 
-                  // ignore unchanged files that were already processed
-                  if (!fileHistory.hasSourceEntry(sourcePath, stats.mtimeMs)) {
-                     // call handler specific processor
-                     if (processor) await processor.bind(this)(ctx, { sourceEntry, sourcePath, stats }, fileHistory);
-
-                     // add source file to history
-                     fileHistory.addSourceEntry({ path: sourcePath, mtime: stats.mtimeMs, ttime: ctx.startTime });
-                  }
-
-                  // mark source entry as processed
-                  fileHistory.markSourceIncluded(sourcePath);
+                  // only process new or changed files
+                  if (changed && processor) await processor.bind(this)(ctx, { sourceEntry, sourcePath, stats }, fileHistory);
                } catch (error) {
                   ctx.processError(new Error(`Cannot process source entry '${sourceEntry}'.\n └─ ${String(error)}`));
                }
@@ -93,7 +80,7 @@ export abstract class AbstractHandler implements ActionHandler {
     * @param entry the file entry relative to `ctx.sourceDir`
     * @returns copy promise
     */
-   protected async copyOrMoveFile(ctx: RunnerContext, entry: SourceFile, fileHistory: FileHistory) {
+   protected async copyOrMoveFile(ctx: RunnerContext, entry: SourceFile, fileHistory?: FileHistory) {
       const { job, result, targetDir, targetPermissions } = ctx;
       const { sourcePath, sourceEntry, stats } = entry;
       const targetPath = join(targetDir, sourceEntry);
@@ -108,8 +95,8 @@ export abstract class AbstractHandler implements ActionHandler {
       await fsx.utimes(targetPath, stats.atime, stats.mtime);
       await this.setTargetFilePermissions(targetPath, targetPermissions);
 
-      // add target to file history
-      fileHistory.addTargetEntry({ path: targetPath, mtime: stats.mtimeMs, ttime: ctx.startTime });
+      // add/update target to file history
+      if (fileHistory) fileHistory.addTargetEntry(targetPath, [stats.mtimeMs, ctx.startTime]);
 
       // log activity
       ctx.processActivity("COPIED", targetPath, ctx.result.copied);
@@ -138,12 +125,12 @@ export abstract class AbstractHandler implements ActionHandler {
       result.deleted++;
    }
 
-   protected async createArchive(ctx: RunnerContext, entries: string[], sourceHistory: FileHistory) {
+   protected async createArchive(ctx: RunnerContext, entries: string[], fileHistory: FileHistory) {
       if (entries.length > 0 && !ctx.result.errors) {
          const { job, sourceDir, targetDir, targetPermissions, result } = ctx;
          const dest = join(targetDir, job.targetArchiveName);
 
-         if (sourceHistory.changed || !fsx.pathExistsSync(dest)) {
+         if (fileHistory.changed || !fsx.pathExistsSync(dest)) {
             await ensureDir(targetDir);
             try {
                await pipeline(tar.pack(sourceDir, { entries }), createGzip(), createWriteStream(dest));
@@ -158,7 +145,7 @@ export abstract class AbstractHandler implements ActionHandler {
             ctx.targetDirs.add(targetDir);
 
             // add archive name to job log
-            sourceHistory.addTargetEntry({ path: dest, mtime: result.startTime, ttime: result.startTime });
+            fileHistory.addTargetEntry(dest, [result.startTime, result.startTime]);
             result.archived = entries.length;
             ctx.processActivity("ARCHIVED", dest, result.archived);
          }
@@ -203,17 +190,17 @@ export abstract class AbstractHandler implements ActionHandler {
       const retentionMs = parse(job.target?.retention) ?? 0;
 
       // create a promise for every source entry in the file history
-      const targetScanPromises = Object.keys(fileHistory.data.target).map((key) => {
+      const targetScanPromises = Object.keys(fileHistory.data.target).map((path) => {
          return limit(async () => {
-            const { path, ttime } = fileHistory.data.target[key] as HistoryEntry;
-            if (!(await fsx.pathExists(path))) {
-               fileHistory.markTargetOutdated(key);
-            } else if (retentionMs > 0 && ctx.startTime - (ttime + retentionMs) >= 0) {
-               await fsx.remove(path);
-               ctx.result.pruned++;
-               fileHistory.markTargetOutdated(key);
-               ctx.processActivity("PRUNED", path, ctx.result.pruned);
-            }
+            const ttime = fileHistory.data.target[path]?.[1] ?? 0;
+            if (await fsx.pathExists(path)) {
+               if (retentionMs > 0 && ctx.startTime - (ttime + retentionMs) >= 0) {
+                  await fsx.remove(path);
+                  fileHistory.markTargetOutdated(path);
+                  ctx.result.pruned++;
+                  ctx.processActivity("PRUNED", path, ctx.result.pruned);
+               }
+            } else fileHistory.markTargetOutdated(path);
          });
       });
 

@@ -21,27 +21,19 @@ export type SourceFile = {
    stats: Stats;
 };
 
-export type HistoryEntry = {
-   path: string;
-   mtime: number;
-   ttime: number;
-};
-
 export type FileHistoryData = {
-   source: Record<string, HistoryEntry>;
-   target: Record<string, HistoryEntry>;
+   source: Record<string, [number, number]>;
+   target: Record<string, [number, number]>;
 };
 
-export interface FileHistory {
+export type FileHistory = {
    data: FileHistoryData;
    changed: boolean;
-   hasSourceEntry(path: string, mtimeMs?: number): boolean;
-   addSourceEntry(entry: HistoryEntry): void;
-   addTargetEntry(entry: HistoryEntry): void;
-   markSourceIncluded(path: string): void;
+   updateSourceEntry(path: string, [mtime, atime]: [number, number]): { changed: boolean; added: boolean };
+   addTargetEntry(path: string, [mtime, atime]: [number, number]): void;
    markTargetOutdated(path: string): void;
-   cleanup(): void;
-}
+   cleanup(): string[];
+};
 
 export interface Task {
    schedule(runImmediately?: boolean): void;

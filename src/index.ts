@@ -1,31 +1,44 @@
 import { JobScheduler } from "./JobScheduler.js";
 import { JobModel } from "./models/JobModel.js";
 import { JobRunnerSetup } from "./models/JobRunnerSetup.js";
-import { ConfigLoader } from "./tasks/ConfigLoader.js";
+import { JobLoader } from "./tasks/JobLoader.js";
 import { JobRunner } from "./tasks/JobRunner.js";
 import type { Job } from "./types/Config.types.js";
 import type { LoaderOptions, RunnerOptions } from "./types/Options.types.js";
 
 // type exports
 export type { LoaderOptions, RunnerOptions } from "./types/Options.types.js";
-export type { Config, Job, Defaults } from "./types/Config.types.js";
 export type { RunnerResult } from "./types/Task.types.js";
+export type { Job } from "./types/Config.types.js";
 
-// export function to create config loader instances
-export function createConfigLoader(options: LoaderOptions = {}): ConfigLoader {
-   return new ConfigLoader(options);
+/**
+ * Creates a `JobLoader` instance to watch and auto-reload job configurations
+ * @param options loader options
+ * @returns the created `JobLoader`instance
+ */
+export function createJobLoader(options: LoaderOptions = {}): JobLoader {
+   return new JobLoader(options);
 }
 
-// export function to create job scheduler instances
-export function createScheduler(options: RunnerOptions = {}): JobScheduler {
+/**
+ * Creates a `JobScheduler` instance to managing and monitoring multiple job schedules
+ * @param options runner options
+ * @returns the created `JobScheduler`instance
+ */
+export function createJobScheduler(options: RunnerOptions = {}): JobScheduler {
    return new JobScheduler(options);
 }
 
-// export function to create single job runner instances
+/**
+ * Creates a `JobRunner` instance that to schedule or instantly execute a single job
+ * @param job the job configuration
+ * @param options runner options
+ * @returns the created `JobRunner` instance
+ */
 export function createJobRunner(job: Job, options: RunnerOptions = {}): JobRunner {
    const setup = new JobRunnerSetup(options);
    setup.validateJob(job);
    return new JobRunner(new JobModel(job), setup);
 }
 
-export default { createConfigLoader, createScheduler, createJobRunner };
+export default { createJobLoader, createJobScheduler, createJobRunner };

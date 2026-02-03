@@ -1,6 +1,0 @@
-jobs:
-  - id: job1
-    action: copy
-
-  - id: job1
-    action: move

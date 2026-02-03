@@ -5,11 +5,10 @@ import http from "node:http";
 import figlet from "figlet";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ConfigLoader } from "./tasks/ConfigLoader.js";
+import { JobLoader } from "./tasks/JobLoader.js";
 import { JobScheduler } from "./JobScheduler.js";
 import { ENV } from "./types/Options.types.js";
-import { JobError } from "./errors/JobError.js";
-import type { Config, Job } from "./types/Config.types.js";
+import type { Job } from "./types/Config.types.js";
 import type { RunnerResult } from "./types/Task.types.js";
 
 // helper
@@ -24,7 +23,7 @@ export async function start() {
    const port = process.env[ENV.PORT] ?? 8778;
 
    // create config loader & job scheduler instance
-   const configLoader = new ConfigLoader();
+   const jobLoader = new JobLoader();
    const jobScheduler = new JobScheduler();
 
    try {
@@ -46,33 +45,29 @@ export async function start() {
       process.exit(1);
    }
 
-   // called when config file is going to be loaded/reloaded
-   configLoader.onLoading((configFile, isReload) => {
-      console.log(`\n${isReload ? "Reloading" : "Loading"} config from '${configFile}' ...`);
+   jobLoader.onLoading((jobsDir: string, firstRun: boolean) => {
+      if (firstRun) console.log(`\nLoading job config from ${jobsDir} ...`);
+   });
+
+   jobLoader.onLoadingError((entry: string, message: string) => {
+      console.log(`🔴 Error loading job '${entry}'. ${message}`);
+      //fsx.removeSync("/tmp/cronops_healthy");
    });
 
    // called if config file has been loaded/reloaded
-   configLoader.onLoaded((config: Config) => {
-      validateConfig(config, jobScheduler);
-      jobScheduler.scheduleJobs(config);
+   jobLoader.onJobLoaded((job: Job) => {
+      jobScheduler.scheduleJob(job);
    });
 
-   // called if config cannot be loaded
-   configLoader.onError((err) => {
-      console.error(chalk.red(`ERROR loading configuration: ${err.message}`));
-      console.log(`🔴 No jobs scheduled (invalid config)\n`);
-      jobScheduler.unscheduleAll();
-      fsx.removeSync("/tmp/cronops_healthy");
+   // called if config file has been loaded/reloaded
+   jobLoader.onJobDeleted((jobId: string) => {
+      jobScheduler.unscheduleJob(jobId);
+      console.log(`⭕ job [${jobId}] unscheduled (removed from file system)`);
    });
 
-   jobScheduler.onReady((jobCount, rescheduled) => {
-      if (jobCount) console.log(`🟢 ${plural(jobCount, "job")} ${rescheduled ? "re" : ""}scheduled\n`);
-      else console.log(`🟡 No jobs scheduled\n`);
-      fsx.ensureFileSync("/tmp/cronops_healthy");
-   });
-
-   jobScheduler.onJobScheduled((job: Job) => {
-      console.log(`🕔 job [${job.id}] scheduled (${job.cron})${job.dry_run ? " 👋 DRY-RUN mode!" : ""}`);
+   jobScheduler.onJobScheduled((job: Job, reschedule) => {
+      if (job.enabled === false) console.log(`⭕ job [${job.id}] unscheduled (disabled)`);
+      else console.log(`🕔 job [${job.id}] ${reschedule ? "re-" : ""}scheduled (${chalk.greenBright(job.cron)})${job.dry_run ? " 👋 DRY-RUN mode!" : ""}`);
    });
 
    jobScheduler.onJobError((job: Job, err: Error) => {
@@ -101,7 +96,7 @@ export async function start() {
    // handle sigterm for proper server/container termination
    process.on("SIGTERM", async () => {
       console.log("SIGTERM received. Shutting down CronOps ...");
-      if (configLoader) await configLoader.gracefulTerminate(2000);
+      if (jobLoader) await jobLoader.gracefulTerminate(2000);
       if (jobScheduler) await jobScheduler.gracefulTerminate(2000);
       process.exit(0);
    });
@@ -144,30 +139,7 @@ export async function start() {
    });
 
    // schedule config loader, load config & schedule jobs
-   configLoader.schedule(true);
-}
-
-function validateConfig(config: Config, scheduler: JobScheduler): void {
-   const seen = new Set();
-   const validJobs = [];
-   for (const job of config.jobs) {
-      // disabled jobs can be ignored
-      if (job.enabled === false) continue;
-
-      // error on violation of job id uniqueness
-      if (seen.has(job.id)) throw new Error(`Unique job id violation ('${job.id}')`);
-      seen.add(job.id);
-
-      try {
-         scheduler.validateJob(job);
-         validJobs.push(job);
-      } catch (error) {
-         const issue = error instanceof JobError ? error.message : String(error);
-         console.log(chalk.yellow(`WARNING: Job '${job.id}' skipped. Reason: ${issue}`));
-      }
-   }
-   // continue only with valid jobs
-   config.jobs = validJobs;
+   jobLoader.schedule(true);
 }
 
 // server entry point

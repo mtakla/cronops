@@ -1,0 +1,14 @@
+action: archive
+cron: "*/5 * * * *"
+source:
+  dir: /
+  includes:
+    - "**/*.ts"
+  excludes:
+    - ".git/**"
+    - "node_modules/**"
+    - "dist/**"
+    - "build/**"
+target:
+  dir: /build/bulk
+  archive_name: "backup-{{MM-dd}}.tgz"

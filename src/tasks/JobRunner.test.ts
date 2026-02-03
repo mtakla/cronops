@@ -56,7 +56,7 @@ describe("JobRunner", () => {
       const job = new JobModel({
          id: "testjob",
          action: "copy",
-         source: { includes: ["**/*.txt"] },
+         source: { includes: ["**/foo.txt"] },
       });
       const task = new JobRunner(job, setup);
       let res = await task.runJob();
@@ -70,7 +70,7 @@ describe("JobRunner", () => {
       const job = new JobModel({
          id: "testjob",
          action: "move",
-         source: { includes: ["**/*.txt"] },
+         source: { includes: ["**/foo.txt"] },
       });
       const task = new JobRunner(job, setup);
       let res = await task.runJob();
@@ -85,7 +85,7 @@ describe("JobRunner", () => {
       const job = new JobModel({
          id: "testjob",
          action: "delete",
-         source: { includes: ["**/*.txt"] },
+         source: { includes: ["**/foo.txt"] },
       });
       const task = new JobRunner(job, setup);
       let res = await task.runJob();
@@ -100,7 +100,7 @@ describe("JobRunner", () => {
       const job = new JobModel({
          id: "testjob",
          action: "archive",
-         source: { includes: ["**/*.txt"] },
+         source: { includes: ["**/foo.txt"] },
          target: { archive_name: "archive.tgz" },
       });
       const task = new JobRunner(job, setup);
@@ -117,7 +117,7 @@ describe("JobRunner", () => {
       });
       const task = new JobRunner(job, setup);
       let res = await task.runJob();
-      expect(res).toMatchObject({ copied: 3, deleted: 0, pruned: 0 });
+      expect(res).toMatchObject({ copied: 4, deleted: 0, pruned: 0 });
       res = await task.runJob(); // run job again should have no effect
       expect(res).toMatchObject({ copied: 0, deleted: 0, pruned: 0 });
    });
@@ -131,7 +131,7 @@ describe("JobRunner", () => {
       let res = await task.runJob();
       expect(fsx.pathExistsSync(join(workDir, "files", "subfolder", "data2.json"))).toBe(false);
       expect(fsx.pathExistsSync(join(workDir, "targets", "subfolder", "data2.json"))).toBe(true);
-      expect(res).toMatchObject({ copied: 3, deleted: 3, pruned: 0 });
+      expect(res).toMatchObject({ copied: 4, deleted: 4, pruned: 0 });
       res = await task.runJob(); // run job again should have no effect
       expect(res).toMatchObject({ copied: 0, deleted: 0, pruned: 0 });
    });
@@ -144,7 +144,7 @@ describe("JobRunner", () => {
       const task = new JobRunner(job, setup);
       let res = await task.runJob();
       expect(fsx.pathExistsSync(join(workDir, "files", "subfolder", "data2.json"))).toBe(false);
-      expect(res).toMatchObject({ copied: 0, deleted: 3, pruned: 0 });
+      expect(res).toMatchObject({ copied: 0, deleted: 4, pruned: 0 });
       res = await task.runJob(); // run job again should have no effect
       expect(res).toMatchObject({ copied: 0, deleted: 0, pruned: 0 });
    });
@@ -156,7 +156,7 @@ describe("JobRunner", () => {
          target: { archive_name: "archive.tgz" },
       });
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 0, archived: 3, pruned: 0 });
+      expect(await task.runJob()).toMatchObject({ copied: 0, archived: 4, pruned: 0 });
       expect(fsx.pathExistsSync(join(workDir, "targets", "archive.tgz"))).toBe(true);
    });
 
@@ -167,7 +167,7 @@ describe("JobRunner", () => {
          dry_run: true,
       });
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 3, deleted: 0, pruned: 0 });
+      expect(await task.runJob()).toMatchObject({ copied: 4, deleted: 0, pruned: 0 });
       expect(fsx.pathExistsSync(join(workDir, "temp", "testjob", "subfolder", "data2.json"))).toBe(true);
    });
 
@@ -178,7 +178,7 @@ describe("JobRunner", () => {
          dry_run: true,
       });
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 3, deleted: 3, pruned: 0 });
+      expect(await task.runJob()).toMatchObject({ copied: 4, deleted: 4, pruned: 0 });
       expect(fsx.pathExistsSync(join(workDir, "files", "subfolder", "data2.json"))).toBe(true); // simulation!
       expect(fsx.pathExistsSync(join(workDir, "temp", "testjob", "subfolder", "data2.json"))).toBe(true);
    });
@@ -190,7 +190,7 @@ describe("JobRunner", () => {
          dry_run: true,
       });
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 0, deleted: 3, pruned: 0 });
+      expect(await task.runJob()).toMatchObject({ copied: 0, deleted: 4, pruned: 0 });
       expect(fsx.pathExistsSync(join(workDir, "files", "subfolder", "data2.json"))).toBe(true); // simulation!
    });
 
@@ -204,7 +204,7 @@ describe("JobRunner", () => {
          dry_run: true,
       });
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 0, deleted: 0, archived: 3, pruned: 0 });
+      expect(await task.runJob()).toMatchObject({ copied: 0, deleted: 0, archived: 4, pruned: 0 });
       expect(fsx.pathExistsSync(join(workDir, "temp", "testjob", "archive.tgz"))).toBe(true);
    });
 
@@ -221,7 +221,7 @@ describe("JobRunner", () => {
       });
       const task = new JobRunner(job, setup);
       const res = await task.runJob();
-      expect(res).toMatchObject({ copied: 3, deleted: 0, pruned: 0 });
+      expect(res).toMatchObject({ copied: 4, deleted: 0, pruned: 0 });
       expect(fsx.pathExistsSync(join(workDir, "targets", "subfolder", "data2.json"))).toBe(true);
       expect((fsx.statSync(join(workDir, "targets", "subfolder", "data2.json")).mode & 0o777).toString(8)).toBe("600");
       expect((fsx.statSync(join(workDir, "targets", "subfolder")).mode & 0o777).toString(8)).toBe("700");
@@ -241,7 +241,7 @@ describe("JobRunner", () => {
          },
       });
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 0, deleted: 0, archived: 3, pruned: 0 });
+      expect(await task.runJob()).toMatchObject({ copied: 0, deleted: 0, archived: 4, pruned: 0 });
       expect(fsx.pathExistsSync(join(workDir, "targets", "archives", "archive.tgz"))).toBe(true);
       expect((fsx.statSync(join(workDir, "targets", "archives", "archive.tgz")).mode & 0o777).toString(8)).toBe("600");
       expect((fsx.statSync(join(workDir, "targets", "archives")).mode & 0o777).toString(8)).toBe("700");
@@ -257,15 +257,11 @@ describe("JobRunner", () => {
             retention: "2h",
          },
       });
-      const log = new FileHistoryModel();
-      log.addTargetEntry({
-         path: join(destDir, "deleteme.txt"),
-         mtime: Date.parse("2020-01-01"),
-         ttime: Date.parse("2020-01-01"),
-      });
-      await fsx.writeJSON(join(setup.logDir, "testjob.history"), log.data);
+      const history = new FileHistoryModel();
+      history.addTargetEntry(join(destDir, "deleteme.txt"), [Date.parse("2020-01-01"), Date.parse("2020-01-01")]);
+      await fsx.writeJSON(join(setup.logDir, "testjob.idx"), history.data);
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 3, deleted: 0, archived: 0, pruned: 1 });
+      expect(await task.runJob()).toMatchObject({ copied: 4, deleted: 0, archived: 0, pruned: 1 });
       expect(fsx.pathExistsSync(join(destDir, "deleteme.txt"))).toBe(false);
    });
 
@@ -279,14 +275,10 @@ describe("JobRunner", () => {
          },
       });
       const log = new FileHistoryModel();
-      log.addTargetEntry({
-         path: join(destDir, "missing.txt"),
-         mtime: Date.parse("2020-01-01"),
-         ttime: Date.parse("2020-01-01"),
-      });
+      log.addTargetEntry(join(destDir, "missing.txt"), [Date.parse("2020-01-01"), Date.parse("2020-01-01")]);
       await fsx.writeJSON(join(setup.logDir, "testjob.history"), log.data);
       const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 3, deleted: 0, archived: 0, pruned: 0 });
+      expect(await task.runJob()).toMatchObject({ copied: 4, deleted: 0, archived: 0, pruned: 0 });
       expect(!fsx.pathExistsSync(join(destDir, "deleteme.txt"))).toBeTruthy();
    });
 });

@@ -1,11 +1,13 @@
 import { format } from "date-fns";
-import type { Job, JobAction, JobSource, JobTarget, Defaults } from "../types/Config.types.js";
+import type { Job, JobAction, JobSource, JobTarget } from "../types/Config.types.js";
 
 export class JobModel {
    public id!: string;
    public action!: JobAction;
    public command: string = "";
-   public environment: Record<string, string> = {};
+   public shell: boolean | string | undefined;
+   public args: string[] = [];
+   public env: Record<string, string> = {};
    public cron: string = "* * * * *";
    public source: JobSource = {};
    public target: JobTarget = {};
@@ -13,8 +15,8 @@ export class JobModel {
    public verbose = false;
    public enabled = true;
 
-   constructor(data: Job, defaults: Defaults = {}) {
-      Object.assign(this, defaults);
+   constructor(data: Job, config = {}) {
+      Object.assign(this, config);
       Object.assign(this, data);
    }
 

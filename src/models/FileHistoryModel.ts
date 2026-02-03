@@ -1,5 +1,4 @@
-import type { FileHistory, FileHistoryData, HistoryEntry } from "../types/Task.types";
-import { createHash } from "node:crypto";
+import type { FileHistory, FileHistoryData } from "../types/Task.types";
 
 /**
  * Uses path hash for each entry
@@ -9,53 +8,54 @@ export class FileHistoryModel implements FileHistory {
    public changed: boolean;
 
    // used for cleaning up outdated entries
-   private includedSources = new Set<string>();
-   private outdatedTargets = new Set<string>();
+   private included = new Set<string>();
+   private outdated = new Set<string>();
 
-   constructor(data: object = { source: {}, target: {} }) {
-      this.data = data as FileHistoryData;
+   constructor(data: FileHistoryData = { source: {}, target: {} }) {
+      this.data = data;
       this.changed = false;
    }
 
-   addSourceEntry(entry: HistoryEntry) {
-      this.data.source[hash(entry.path)] = entry;
+   updateSourceEntry(path: string, entry: [number, number]): { changed: boolean; added: boolean } {
+      const prev = this.data.source[path];
+      const added = prev === undefined;
+      const changed = added || prev[0] !== entry[0];
+      if (changed) {
+         this.data.source[path] = entry;
+         this.changed = true;
+      }
+      this.included.add(path);
+      return { changed, added };
+   }
+
+   addTargetEntry(path: string, entry: [number, number]) {
+      this.data.target[path] = entry;
       this.changed = true;
-   }
-
-   addTargetEntry(entry: HistoryEntry) {
-      this.data.target[hash(entry.path)] = entry;
-      this.changed = true;
-   }
-
-   hasSourceEntry(path: string, mtimeMs?: number): boolean {
-      const entry = this.data.source[hash(path)];
-      return entry !== undefined && (mtimeMs ? mtimeMs === entry.mtime : true);
-   }
-
-   markSourceIncluded(path: string) {
-      const key = hash(path);
-      if (key in this.data.source) this.includedSources.add(key);
    }
 
    markTargetOutdated(path: string) {
-      const key = hash(path);
-      if (key in this.data.target) this.outdatedTargets.add(key);
+      if (path in this.data.target) this.outdated.add(path);
    }
 
+   /**
+    * Cleanup does the following:
+    * - removes source entries that are not marked as "included" (= files that are not any more matched by glob selector or removed from file system)
+    * - removes target entries that are marked as "outdated" (= to potentially be removed from the file system)
+    * @returns list of files that are not any more matched by glob selector or removed from file system
+    */
    cleanup() {
-      const outdatedSources = new Set(Object.keys(this.data.source)).difference(this.includedSources);
-      for (const key of outdatedSources) this._removeEntry("source", key);
-      for (const key of this.outdatedTargets) this._removeEntry("target", key);
+      const useless = new Set(Object.keys(this.data.source)).difference(this.included);
+      for (const path of useless) this._removeEntry("source", path);
+      for (const path of this.outdated) this._removeEntry("target", path);
+      this.included.clear();
+      this.outdated.clear();
+      return [...useless];
    }
 
-   private _removeEntry(type: "source" | "target", key: string): void {
-      if (key in this.data[type]) {
-         delete this.data[type][key];
+   private _removeEntry(type: "source" | "target", path: string): void {
+      if (path in this.data[type]) {
+         delete this.data[type][path];
          this.changed = true;
       }
    }
-}
-
-function hash(path: string): string {
-   return createHash("sha256").update(path).digest("hex");
 }
