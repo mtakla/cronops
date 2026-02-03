@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PermissionModel } from "./PermissionModel.js";
+import { PermissionModel } from "../../src/models/PermissionModel.js";
 
 describe(PermissionModel.name, () => {
    it("minimum constructor", () => {

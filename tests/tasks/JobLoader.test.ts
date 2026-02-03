@@ -1,14 +1,14 @@
 import fsx from "fs-extra";
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { join, resolve } from "node:path";
-import { JobLoader } from "./JobLoader.js";
+import { JobLoader } from "../../src/tasks/JobLoader.js";
 
 // remember app dir
-const workDir = resolve("./build/test/JobLoader");
+const workDir = resolve("./build/tests/JobLoader");
 
 beforeAll(async () => {
    await fsx.emptyDir(workDir);
-   await fsx.copy("./test/fixtures", workDir);
+   await fsx.copy("./tests/fixtures", workDir);
 });
 
 describe(JobLoader.name, () => {
@@ -27,8 +27,8 @@ describe(JobLoader.name, () => {
       task.onJobLoaded(cbJobLoaded);
       const jobs = await task.loadJobs();
       expect(jobs.length).toBe(2);
-      expect(jobs[0].id).toBe("test-job1");
-      expect(jobs[0].action).toBe("copy");
+      expect(jobs[0]?.id).toBe("test-job1");
+      expect(jobs[0]?.action).toBe("copy");
       expect(cbLoading).toBeCalledTimes(1);
       expect(cbJobLoaded).toBeCalledTimes(2);
    });
@@ -51,8 +51,8 @@ describe(JobLoader.name, () => {
       await fsx.writeFile(join(workDir, "jobs", "test-job1.yaml"), "action: move\n", "utf8");
       const jobs = await task.loadJobs();
       expect(jobs.length).toBe(1);
-      expect(jobs[0].id).toBe("test-job1");
-      expect(jobs[0].action).toBe("move");
+      expect(jobs[0]?.id).toBe("test-job1");
+      expect(jobs[0]?.action).toBe("move");
       expect(cbJobLoaded).toBeCalledTimes(3);
    });
 });

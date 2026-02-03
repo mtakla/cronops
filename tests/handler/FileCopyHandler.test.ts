@@ -1,18 +1,18 @@
 import { join, resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { JobRunnerSetup } from "../models/JobRunnerSetup.js";
-import { JobRunnerContext } from "../models/JobRunnerContext.js";
-import { JobModel } from "../models/JobModel.js";
+import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
+import { JobRunnerContext } from "../../src/models/JobRunnerContext.js";
+import { JobModel } from "../../src/models/JobModel.js";
 import { copySync, emptyDirSync, pathExistsSync } from "fs-extra";
 import { closeSync, openSync } from "node:fs";
 import { EventEmitter } from "node:stream";
-import { FileHistoryModel } from "../models/FileHistoryModel.js";
-import { JobError } from "../errors/JobError.js";
-import { FileArchiveHandler } from "./FileArchiveHandler.js";
-import type { Job } from "../types/Config.types.js";
+import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
+import { JobError } from "../../src/errors/JobError.js";
+import { FileCopyHandler } from "../../src/handlers/FileCopyHandler.js";
+import type { Job } from "../../src/types/Config.types.js";
 
-const workDir = resolve("./build/test/FileArchiveHandler");
-const fixtureDir = resolve("./test/fixtures/files");
+const workDir = resolve("./build/tests/FileCopyHandler");
+const fixtureDir = resolve("./tests/fixtures/files");
 const sourceRoot = join(workDir, "source");
 const targetRoot = join(workDir, "target");
 const events = new EventEmitter();
@@ -30,17 +30,17 @@ beforeEach(() => {
    errMock.mockReset();
 });
 
-describe(FileArchiveHandler.name, () => {
+describe(FileCopyHandler.name, () => {
    it("validateJob() should work ", () => {
-      const handler = new FileArchiveHandler(new JobRunnerSetup({ sourceRoot, targetRoot }));
+      const handler = new FileCopyHandler(new JobRunnerSetup({ sourceRoot, targetRoot }));
       expect(() => {
-         handler.validateJob({ id: "valid-job", action: "archive", source: { dir: "/subfolder" }, target: {} });
+         handler.validateJob({ id: "valid-job", action: "copy", source: { dir: "/subfolder" }, target: {} });
       }).not.toThrow(JobError);
       expect(() => {
-         handler.validateJob({ id: "missing-target-config", action: "archive", source: {} });
+         handler.validateJob({ id: "missing-target-config", action: "copy", source: {} });
       }).toThrow(JobError);
       expect(() => {
-         handler.validateJob({ id: "missing-source-dir", action: "archive", source: { dir: "unknown" } });
+         handler.validateJob({ id: "missing-source-dir", action: "copy", source: { dir: "unknown" } });
       }).toThrow(JobError);
    });
 
@@ -48,13 +48,13 @@ describe(FileArchiveHandler.name, () => {
       const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
       const ctx = createRunnerContext(setup, {
          id: "no-files",
-         action: "archive",
+         action: "copy",
          source: { dir: "/" },
-         target: { archive_name: "archive.tgz" },
+         target: { dir: "/" },
       });
-      const handler = new FileArchiveHandler(setup);
+      const handler = new FileCopyHandler(setup);
       await handler.processFiles(ctx, [], new FileHistoryModel());
-      expect(pathExistsSync(join(targetRoot, "archive.tgz"))).toBeFalsy();
+      expect(pathExistsSync(join(targetRoot, "subfolder"))).toBeFalsy();
       expect(errMock).toBeCalledTimes(0);
       closeLog(ctx.getLogFd());
    });
@@ -63,13 +63,14 @@ describe(FileArchiveHandler.name, () => {
       const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
       const ctx = createRunnerContext(setup, {
          id: "delete-two-files",
-         action: "archive",
+         action: "copy",
          source: { dir: "/" },
-         target: { archive_name: "archive.tgz" },
+         target: { dir: "/" },
       });
-      const handler = new FileArchiveHandler(setup);
+      const handler = new FileCopyHandler(setup);
       await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json"], new FileHistoryModel());
-      expect(pathExistsSync(join(targetRoot, "archive.tgz"))).toBeTruthy();
+      expect(pathExistsSync(join(targetRoot, "subfolder", "data2.json"))).toBeTruthy();
+      expect(pathExistsSync(join(sourceRoot, "subfolder", "data2.json"))).toBeTruthy();
       expect(errMock).toBeCalledTimes(0);
       closeLog(ctx.getLogFd());
    });
@@ -78,13 +79,14 @@ describe(FileArchiveHandler.name, () => {
       const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
       const ctx = createRunnerContext(setup, {
          id: "error-unknown-file",
-         action: "archive",
+         action: "copy",
          source: { dir: "/" },
-         target: { archive_name: "archive.tgz" },
+         target: { dir: "/" },
       });
-      const handler = new FileArchiveHandler(setup);
+      const handler = new FileCopyHandler(setup);
       await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json", "unknown"], new FileHistoryModel());
       expect(errMock).toBeCalledTimes(1);
+      expect(pathExistsSync(join(targetRoot, "subfolder", "data2.json"))).toBeTruthy();
       closeLog(ctx.getLogFd());
    });
 });

@@ -35,6 +35,9 @@ export const JobSchema = z.strictObject({
    enabled: z.boolean().optional(),
 });
 
+/**
+ * A Job object (inferred from {@link JobSchema}).
+ */
 export type Job = { id: string } & z.infer<typeof JobSchema>;
 export type JobAction = z.infer<typeof JobSchema.shape.action>;
 export type JobSource = z.infer<typeof JobSchema.shape.source>;

@@ -4,12 +4,12 @@ import { join, resolve, sep } from "node:path";
 import { ENV, type RunnerOptions } from "../types/Options.types.js";
 import { JobError } from "../errors/JobError.js";
 import { JobSchema, type Job, type JobAction } from "../types/Config.types.js";
-import { ExecHandler } from "../handler/ExecHandler.js";
-import { FileCopyHandler } from "../handler/FileCopyHandler.js";
-import { FileMoveHandler } from "../handler/FileMoveHandler.js";
-import { FileArchiveHandler } from "../handler/FileArchiveHandler.js";
-import { FileDeleteHandler } from "../handler/FileDeleteHandler.js";
-import type { AbstractHandler } from "../handler/AbstractHandler.js";
+import { ExecHandler } from "../handlers/ExecHandler.js";
+import { FileCopyHandler } from "../handlers/FileCopyHandler.js";
+import { FileMoveHandler } from "../handlers/FileMoveHandler.js";
+import { FileArchiveHandler } from "../handlers/FileArchiveHandler.js";
+import { FileDeleteHandler } from "../handlers/FileDeleteHandler.js";
+import type { AbstractHandler } from "../handlers/AbstractHandler.js";
 
 export class JobRunnerSetup implements RunnerOptions {
    public readonly sourceRoot: string;

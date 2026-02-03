@@ -1,14 +1,14 @@
 import fsx from "fs-extra";
 import { join, resolve } from "node:path";
 import { describe, it, expect, beforeEach } from "vitest";
-import { JobRunner } from "./JobRunner.js";
-import { JobModel } from "../models/JobModel.js";
-import { JobRunnerSetup } from "../models/JobRunnerSetup.js";
-import { FileHistoryModel } from "../models/FileHistoryModel.js";
+import { JobRunner } from "../../src/tasks/JobRunner.js";
+import { JobModel } from "../../src/models/JobModel.js";
+import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
+import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
 
 // remember app dir
-const dir = resolve("./test/fixtures");
-const workDir = resolve("./build/test/JobRunner");
+const dir = resolve("./tests/fixtures");
+const workDir = resolve("./build/tests/JobRunner");
 
 const setup = new JobRunnerSetup({
    sourceRoot: join(workDir, "files"),

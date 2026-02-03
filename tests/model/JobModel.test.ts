@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { JobModel } from "./JobModel.js";
+import { JobModel } from "../../src/models/JobModel.js";
 
 describe(JobModel.name, () => {
    it("constructor with minimal specs should work", () => {

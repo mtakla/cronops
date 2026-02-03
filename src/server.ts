@@ -6,7 +6,7 @@ import figlet from "figlet";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JobLoader } from "./tasks/JobLoader.js";
-import { JobScheduler } from "./JobScheduler.js";
+import { JobScheduler } from "./tasks/JobScheduler.js";
 import { ENV } from "./types/Options.types.js";
 import type { Job } from "./types/Config.types.js";
 import type { RunnerResult } from "./types/Task.types.js";
