@@ -19,9 +19,12 @@ export class JobRunnerSetup implements RunnerOptions {
    public readonly source3Root: string;
    public readonly target3Root: string;
    public readonly shell: string | boolean;
-   public readonly scriptDir: string;
+   public readonly configDir: string;
    public readonly tempDir: string;
    public readonly logDir: string;
+
+   // additional props
+   public readonly scriptDir: string;
 
    // helper
    private sourceRootDirs: [string, string, string];
@@ -35,10 +38,11 @@ export class JobRunnerSetup implements RunnerOptions {
       this.target2Root = resolve(options.target2Root ?? process.env[ENV.TARGET_2_ROOT] ?? "./");
       this.source3Root = resolve(options.source3Root ?? process.env[ENV.SOURCE_3_ROOT] ?? "./");
       this.target3Root = resolve(options.target3Root ?? process.env[ENV.TARGET_3_ROOT] ?? "./");
+      this.configDir = resolve(options.configDir ?? process.env[ENV.CONFIG_DIR] ?? "./config");
       this.tempDir = resolve(options.tempDir ?? process.env[ENV.TEMP_DIR] ?? join(os.tmpdir(), "cronops"));
-      this.scriptDir = resolve(options.scriptDir ?? "./config/scripts");
       this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? join(os.homedir(), ".cronops"));
-      this.shell = options.shell ?? parseShellSettings(process.env[ENV.EXEC_SHELL]);
+      this.shell = options.shell ?? parseShellSettings(process.env[ENV.EXEC_SHELL]) ?? false;
+      this.scriptDir = join(this.configDir, "scripts");
 
       // helper for quick path resolution
       this.sourceRootDirs = [this.sourceRoot, this.source2Root, this.source3Root];

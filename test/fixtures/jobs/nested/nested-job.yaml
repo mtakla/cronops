@@ -1,0 +1,2 @@
+action: exec
+command: "echo 'to the moon!'"

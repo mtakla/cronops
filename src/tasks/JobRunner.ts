@@ -90,7 +90,7 @@ export class JobRunner extends AbstractTask<RunnerResult> {
 
    protected async loadFileHistory(job: Job): Promise<FileHistory> {
       try {
-         const filePath = join(this.setup.logDir, `${job.id}.history`);
+         const filePath = join(this.setup.logDir, `${job.id}.idx`);
          return new FileHistoryModel(await readJSON(filePath));
       } catch {
          return new FileHistoryModel();
@@ -100,7 +100,7 @@ export class JobRunner extends AbstractTask<RunnerResult> {
    protected async saveFileHistory(job: Job, fileHistory: FileHistory): Promise<void> {
       if (fileHistory.changed) {
          try {
-            const filePath = join(this.setup.logDir, `${job.id}.history`);
+            const filePath = join(this.setup.logDir, `${job.id}.idx`);
             await writeJSON(filePath, fileHistory.data, { spaces: 4 });
          } catch {}
       }

@@ -3,9 +3,11 @@
 ## version 0.1.1
 
  - ADDED: job action `exec` 
+ - ADDED: jobLoader recognizes deleted job files 
  - ADDED: simple web api to trigger jobs manually
- - ADDED: job validation & disabling of wrong configured jobs
- - ADDED: index.ts allowing to use configLoader, jobScheduler & jobRunner in js/ts programs
+ - ADDED: job validation and auto disabling wrong configured jobs
+ - ADDED: index.ts allowing to use jobLoader, jobScheduler & jobRunner in js/ts programs
+-  CHANGED: jobs configuration split up to single job configuration files organized in `/config/jobs`
  - CHANGED: project renames to @mtakla/cronops
 
 ## version 0.1.0

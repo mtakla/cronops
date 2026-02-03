@@ -17,7 +17,7 @@ export class FileDeleteHandler extends AbstractHandler implements ActionHandler 
 
    override async processFiles(ctx: RunnerContext, entries: string[], fileHistory: FileHistory): Promise<void> {
       if (entries.length > 0) {
-         await super.processSources(ctx, entries, fileHistory, false, this.deleteFile);
+         await super.processSources(ctx, entries, fileHistory, this.deleteFile);
          await super.deleteEmptySourceDirs(ctx);
       }
       await super.cleanup(ctx, fileHistory);

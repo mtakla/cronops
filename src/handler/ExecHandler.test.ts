@@ -12,8 +12,9 @@ import { FileHistoryModel } from "../models/FileHistoryModel.js";
 import { JobError } from "../errors/JobError.js";
 
 const workDir = resolve("./build/test/ExecHandler");
-const scriptDir = resolve("./test/fixtures/scripts");
+const scriptsDir = resolve("./test/fixtures/scripts");
 const sourceRoot = resolve("./test/fixtures");
+const configDir = resolve("./test/fixtures");
 const nodeExec = process.argv[0];
 const events = new EventEmitter();
 
@@ -45,7 +46,8 @@ describe(ExecHandler.name, () => {
       const ctx = createRunnerContext(setup, {
          id: "exec-ok-os",
          action: "exec",
-         command: `${nodeExec} ${join(scriptDir, "exec-ok.js")}`,
+         command: `${nodeExec}`,
+         args: [`${join(scriptsDir, "exec-ok.js")}`],
       });
       const handler = new ExecHandler(setup);
       await handler.process(ctx);
@@ -53,11 +55,12 @@ describe(ExecHandler.name, () => {
    });
 
    it("process(): calling with shell should work", async () => {
-      const setup = new JobRunnerSetup({ shell: true });
+      const setup = new JobRunnerSetup();
       const ctx = createRunnerContext(setup, {
          id: "exec-ok-shell",
          action: "exec",
-         command: `node ${join(scriptDir, "exec-ok.js")}`,
+         shell: true,
+         command: `node ${join(scriptsDir, "exec-ok.js")}`,
       });
       const handler = new ExecHandler(setup);
       await handler.process(ctx);
@@ -69,7 +72,7 @@ describe(ExecHandler.name, () => {
       const ctx = createRunnerContext(setup, {
          id: "test-fail-errorcode",
          action: "exec",
-         command: `node ${join(scriptDir, "exec-fail-errorcode.js")}`,
+         command: `node ${join(scriptsDir, "exec-fail-errorcode.js")}`,
       });
       const handler = new ExecHandler(setup);
       await expect(handler.process(ctx)).rejects.toThrow();
@@ -81,7 +84,7 @@ describe(ExecHandler.name, () => {
       const ctx = createRunnerContext(setup, {
          id: "exec-fail-exception",
          action: "exec",
-         command: `node ${join(scriptDir, "exec-fail-exception.js")}`,
+         command: `node ${join(scriptsDir, "exec-fail-exception.js")}`,
       });
       const handler = new ExecHandler(setup);
       await expect(handler.process(ctx)).rejects.toThrow();
@@ -89,46 +92,48 @@ describe(ExecHandler.name, () => {
    });
 
    it("process(): calling with extra environment should work", async () => {
-      const setup = new JobRunnerSetup({ shell: true, scriptDir });
+      const setup = new JobRunnerSetup({ shell: true, configDir });
       const ctx = createRunnerContext(setup, {
          id: "exec-ok-environment",
          action: "exec",
          command: `node {scriptDir}/{jobId}.js`,
-         environment: { CRONOPS_TEST_ENV: "foo" },
+         env: { CRONOPS_TEST_ENV: "foo" },
       });
       const handler = new ExecHandler(setup);
       await handler.process(ctx);
       closeLog(ctx.getLogFd());
    });
 
-   it("processFiles(): calling on 2 sources should work", async () => {
-      const setup = new JobRunnerSetup({ shell: false, sourceRoot, scriptDir });
+   it("processFiles(): calling on existing sources should work", async () => {
+      const setup = new JobRunnerSetup({ shell: false, sourceRoot, configDir });
       const ctx = createRunnerContext(setup, {
          id: "exec-ok-files",
          action: "exec",
-         command: `node {scriptDir}/{jobId}.js {file}`,
+         command: `${nodeExec}`,
+         args: [`{scriptDir}/{jobId}.js`, "{file}"],
          source: {
             dir: "/files",
          },
       });
       const handler = new ExecHandler(setup);
-      await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json"], new FileHistoryModel());
+      await handler.processFiles(ctx, ["data1.json", "sam's cheese.txt", "subfolder/data2.json"], new FileHistoryModel());
       expect(errMock).toBeCalledTimes(0);
       closeLog(ctx.getLogFd());
    });
 
    it("processFiles(): calling on missing file should partly fail", async () => {
-      const setup = new JobRunnerSetup({ shell: false, sourceRoot, scriptDir });
+      const setup = new JobRunnerSetup({ shell: false, sourceRoot, configDir });
       const ctx = createRunnerContext(setup, {
          id: "exec-missing-file",
          action: "exec",
-         command: `node {scriptDir}/exec-ok-files.js {file}`,
+         command: `${nodeExec}`,
+         args: [`{scriptDir}/{jobId}.js`, "{file}"],
          source: {
             dir: "/files",
          },
       });
       const handler = new ExecHandler(setup);
-      await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json", "missing"], new FileHistoryModel());
+      await handler.processFiles(ctx, ["missing"], new FileHistoryModel());
       expect(errMock).toBeCalledTimes(1);
       closeLog(ctx.getLogFd());
    });

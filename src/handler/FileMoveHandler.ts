@@ -21,7 +21,7 @@ export class FileMoveHandler extends AbstractHandler implements ActionHandler {
    public override async processFiles(ctx: RunnerContext, entries: string[], fileHistory: FileHistory): Promise<void> {
       if (entries.length > 0) {
          await super.createTargetDirs(ctx, entries);
-         await super.processSources(ctx, entries, fileHistory, false, this.copyOrMoveFile);
+         await super.processSources(ctx, entries, fileHistory, this.copyOrMoveFile);
          await super.setTargetDirPermissions(ctx);
          await super.deleteEmptySourceDirs(ctx);
       }

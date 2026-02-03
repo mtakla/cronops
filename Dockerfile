@@ -39,14 +39,15 @@ RUN apk add --no-cache \
 
 # environment variables
 ENV CROPS_CONFIG_DIR=/config \
-    CROPS_LOG_DIR=/data/logs \
     CROPS_TEMP_DIR=/data/temp \
+    CROPS_LOG_DIR=/data/logs \
     CROPS_SOURCE_ROOT=/io/source \
     CROPS_TARGET_ROOT=/io/target \
     CROPS_SOURCE_2_ROOT=/io/source2 \
     CROPS_TARGET_2_ROOT=/io/target2 \
     CROPS_SOURCE_3_ROOT=/io/source3 \
     CROPS_TARGET_3_ROOT=/io/target3 \
+    CROPS_PORT=8083\
     NODE_ENV=production
 
 # create folders
@@ -64,7 +65,7 @@ RUN mkdir -p \
 WORKDIR /app
 
 # copy essential files
-COPY ./jobs ./jobs
+COPY ./config ./config
 COPY LICENSE ./
 COPY package*.json ./
 

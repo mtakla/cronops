@@ -5,77 +5,94 @@ describe(FileHistoryModel.name, () => {
    it("default constructor should work", () => {
       const history = new FileHistoryModel();
       expect(history.data).toEqual({ source: {}, target: {} });
+      expect(history.changed).toBe(false);
    });
 
    it("constructor with data should work", () => {
       const history = new FileHistoryModel({
-         source: { "7849a2b08ba73b0e02620acd644bad3363bc7b46fd498809146ba56ddb8e7d7c": {} },
-         target: { "3a2cadae311d6560fbb31e64c53b9b175b6c1c50596cb47d0a8cb6f9118475ed": {} },
+         source: { "/foo/source": [1, 2] },
+         target: { "/foo/target": [3, 4] },
       });
-      expect(Object.keys(history.data.source)).toEqual(["7849a2b08ba73b0e02620acd644bad3363bc7b46fd498809146ba56ddb8e7d7c"]);
-      expect(Object.keys(history.data.target)).toEqual(["3a2cadae311d6560fbb31e64c53b9b175b6c1c50596cb47d0a8cb6f9118475ed"]);
+      expect(history.data.source).toEqual({ "/foo/source": [1, 2] });
+      expect(history.data.target).toEqual({ "/foo/target": [3, 4] });
+      expect(history.changed).toBe(false);
    });
 
-   it("addSourceEntry()", () => {
+   it("updateSourceEntry() with new entry should work", () => {
       const history = new FileHistoryModel();
-      history.addSourceEntry({ path: "/foo/src", mtime: 12, ttime: 1 });
-      expect(history.data.source).toEqual({
-         "7fc5f1bf49912fc8d57a92f7c331f13f82684021c916873aedaa898c5ae8d4c7": {
-            path: "/foo/src",
-            mtime: 12,
-            ttime: 1,
-         },
-      });
+      const { changed, added } = history.updateSourceEntry("/foo/source", [1, 2]);
+      expect(history.data.source).toEqual({ "/foo/source": [1, 2] });
+      expect(history.changed).toBe(true);
+      expect(changed).toBe(true);
+      expect(added).toBe(true);
    });
 
-   it("addTargetEntry()", () => {
-      const history = new FileHistoryModel();
-      history.addTargetEntry({ path: "/foo/dest", mtime: 0, ttime: 12 });
-      expect(history.data.target).toEqual({
-         "3a2cadae311d6560fbb31e64c53b9b175b6c1c50596cb47d0a8cb6f9118475ed": {
-            path: "/foo/dest",
-            mtime: 0,
-            ttime: 12,
-         },
+   it("updateSourceEntry() with identical entry should work", () => {
+      const history = new FileHistoryModel({
+         source: { "/foo/source": [1, 2] },
+         target: {},
       });
+      const { changed, added } = history.updateSourceEntry("/foo/source", [1, 2]);
+      expect(history.data.source).toEqual({ "/foo/source": [1, 2] });
+      expect(history.changed).toBe(false);
+      expect(changed).toBe(false);
+      expect(added).toBe(false);
    });
 
-   it("hasSourceEntry()", () => {
+   it("updateSourceEntry() with newer entry should work", () => {
+      const history = new FileHistoryModel({
+         source: { "/foo/source": [1, 2] },
+         target: {},
+      });
+      const { changed, added } = history.updateSourceEntry("/foo/source", [11, 2]);
+      expect(history.data.source).toEqual({ "/foo/source": [11, 2] });
+      expect(history.changed).toBe(true);
+      expect(changed).toBe(true);
+      expect(added).toBe(false);
+   });
+
+   it("updateSourceEntry() with updated entry should work", () => {
+      const history = new FileHistoryModel({
+         source: { "/foo/source": [1, 2] },
+         target: {},
+      });
+      const { changed, added } = history.updateSourceEntry("/foo/source", [1, 22]);
+      expect(history.data.source).toEqual({ "/foo/source": [1, 2] });
+      expect(history.changed).toBe(false);
+      expect(changed).toBe(false);
+      expect(added).toBe(false);
+   });
+
+   it("addTargetEntry() on empty targets should work", () => {
       const history = new FileHistoryModel();
-      history.addSourceEntry({ path: "/foo/src", mtime: 0, ttime: 0 });
-      expect(history.hasSourceEntry("/foo/src")).toBeTruthy();
-      expect(history.hasSourceEntry("/foo/src", 1748515500000)).toBeFalsy();
-      expect(history.hasSourceEntry("/foo/src", undefined)).toBeTruthy();
-      history.addSourceEntry({ path: "/foo/dest", mtime: 1748515500000, ttime: 0 });
-      expect(history.hasSourceEntry("/foo/dest", 1748515500000)).toBeTruthy();
-      expect(history.hasSourceEntry("/foo/dest", 1748515500001)).toBeFalsy();
-      expect(history.hasSourceEntry("/foo/dest", undefined)).toBeTruthy();
+      history.addTargetEntry("/foo/target", [1, 2]);
+      expect(history.data.target).toEqual({ "/foo/target": [1, 2] });
+      expect(history.changed).toBe(true);
    });
 
    it("cleanup()", () => {
-      const history = new FileHistoryModel();
+      let history = new FileHistoryModel({
+         source: { "/src/outdated": [1, 2] },
+         target: {},
+      });
       history.cleanup();
       expect(Object.keys(history.data.source)).toHaveLength(0);
       expect(Object.keys(history.data.target)).toHaveLength(0);
 
-      history.addSourceEntry({ path: "/src/outdated", mtime: 0, ttime: 0 });
-      history.addTargetEntry({ path: "/dest/included", mtime: 0, ttime: 0 });
-      history.cleanup();
-      expect(Object.keys(history.data.source)).toHaveLength(0);
+      history = new FileHistoryModel({
+         source: { "/src/included": [1, 2] },
+         target: {},
+      });
+      history.updateSourceEntry("/src/included", [1, 2]);
+      history.addTargetEntry("/dest/foo", [1, 2]);
+      expect(Object.keys(history.data.source)).toHaveLength(1);
       expect(Object.keys(history.data.target)).toHaveLength(1);
-
-      history.markTargetOutdated("/dest/included");
-      history.cleanup();
-      expect(Object.keys(history.data.source)).toHaveLength(0);
-      expect(Object.keys(history.data.target)).toHaveLength(0);
-
-      history.addSourceEntry({ path: "/src/included", mtime: 0, ttime: 0 });
-      history.addSourceEntry({ path: "/src/outdated", mtime: 0, ttime: 0 });
-      history.addTargetEntry({ path: "/dest/outdated", mtime: 0, ttime: 0 });
-      history.markSourceIncluded("/src/included");
-      history.markTargetOutdated("/dest/outdated");
       history.cleanup();
       expect(Object.keys(history.data.source)).toHaveLength(1);
+      expect(Object.keys(history.data.target)).toHaveLength(1);
+      history.markTargetOutdated("/dest/foo");
+      history.cleanup();
+      expect(Object.keys(history.data.source)).toHaveLength(0);
       expect(Object.keys(history.data.target)).toHaveLength(0);
    });
 });

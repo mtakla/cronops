@@ -1,0 +1,7 @@
+action: exec
+cron: "*/5 * * * * *"
+command: "node"
+args:
+  - "--experimental-vm-modules"
+  - "{scriptDir}/example-script.js"
+enabled: false
