@@ -18,15 +18,19 @@
       "PGID",
       "PLIMIT",
       "PUID",
+      "rapi",
       "rclone",
       "reverant",
       "singlefile",
       "sunt",
       "tzdata",
-      "unstub"
+      "deleteme",
+      "unstub",
+      "webapi"
    ],
    "remote.autoForwardPortsFallback": 0,
-   "cSpell.ignoreWords": [
-      "deleteme"
-   ]
+   "terminal.integrated.env.linux": {
+      "CROPS_API_BASE_URL": "http://localhost:3000",
+      "CROPS_API_KEY": "54bad6e77cf8cbc3c65ca76d127138d50e63adc29fb14450f1d60f2693b8676c"
+   },
 }

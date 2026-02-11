@@ -78,8 +78,11 @@ export const ENV = {
    SOURCE_3_ROOT: "CROPS_SOURCE_3_ROOT",
    TARGET_3_ROOT: "CROPS_TARGET_3_ROOT",
    EXEC_SHELL: "CROPS_EXEC_SHELL",
-   PLIMIT_SPAWN: "CROPS_PLIMIT_SPAWN", // 32 default // TODO
-   PLIMIT_FS: "CROPS_PLIMIT_FS", // 64 default  // TODO
+   PLIMIT_SPAWN: "CROPS_PLIMIT_SPAWN", // 16 default (number of parallel sub-process executions) // TODO
+   PLIMIT_FS: "CROPS_PLIMIT_FS", // 120 default (number of parallel file system operations)  // TODO
+   API_KEY: "CROPS_API_KEY",
+   BASE_URL: "CROPS_BASE_URL",
+   HOST: "CROPS_HOST",
    PORT: "CROPS_PORT",
    TZ: "TZ",
 } as const;

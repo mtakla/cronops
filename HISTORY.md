@@ -2,6 +2,7 @@
 
 ## version 0.1.1
 
+ - ADDED: Web-API support & openAPI endpoint
  - ADDED: job action `exec` 
  - ADDED: jobLoader recognizes deleted job files 
  - ADDED: simple web api to trigger jobs manually

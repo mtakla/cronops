@@ -47,6 +47,7 @@ ENV CROPS_CONFIG_DIR=/config \
     CROPS_TARGET_2_ROOT=/io/target2 \
     CROPS_SOURCE_3_ROOT=/io/source3 \
     CROPS_TARGET_3_ROOT=/io/target3 \
+    CROPS_HOST=0.0.0.0\
     CROPS_PORT=8083\
     NODE_ENV=production
 
@@ -90,10 +91,10 @@ VOLUME ${CROPS_CONFIG_DIR} \
 EXPOSE ${CROPS_PORT}
 
 # configure healthcheck
-HEALTHCHECK --interval=5s \
+HEALTHCHECK --interval=30s  \
             --timeout=3s \
             --retries=2 \
-            CMD test -f /tmp/cronops_healthy
+            CMD curl -fsS http://localhost:${CROPS_PORT}/health || exit 1
 
 # define entry 
 CMD ["node", "./dist/server.js"]

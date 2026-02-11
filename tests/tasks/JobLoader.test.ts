@@ -20,16 +20,15 @@ describe(JobLoader.name, () => {
    });
 
    it("loading test jobs should work", async () => {
-      const cbLoading = vi.fn();
       const cbJobLoaded = vi.fn();
       const task = new JobLoader({ configDir: workDir });
-      task.onLoading(cbLoading);
       task.onJobLoaded(cbJobLoaded);
       const jobs = await task.loadJobs();
       expect(jobs.length).toBe(2);
       expect(jobs[0]?.id).toBe("test-job1");
       expect(jobs[0]?.action).toBe("copy");
-      expect(cbLoading).toBeCalledTimes(1);
+      expect(jobs[1]?.id).toBe("nested/nested-job");
+      expect(jobs[1]?.action).toBe("exec");
       expect(cbJobLoaded).toBeCalledTimes(2);
    });
 
@@ -54,5 +53,16 @@ describe(JobLoader.name, () => {
       expect(jobs[0]?.id).toBe("test-job1");
       expect(jobs[0]?.action).toBe("move");
       expect(cbJobLoaded).toBeCalledTimes(3);
+   });
+
+   it("deleted jobs should be emitted", async () => {
+      const cbJobDeleted = vi.fn();
+      const task = new JobLoader({ configDir: workDir });
+      task.onJobDeleted(cbJobDeleted);
+      expect((await task.loadJobs()).length).toBe(2);
+      await fsx.rm(join(workDir, "jobs", "test-job1.yaml"));
+      const jobs = await task.loadJobs();
+      expect(jobs.length).toBe(0);
+      expect(cbJobDeleted).toBeCalledWith("test-job1");
    });
 });
