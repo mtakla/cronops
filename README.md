@@ -4,41 +4,51 @@
 [![Coverage Status](https://img.shields.io/badge/coverage-95%25-green)](https://img.shields.io/badge/coverage-95%25-green)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-orange.svg)](https://www.buymeacoffee.com/nevereven)
 
-cronops is a lightweight scheduling service that periodically moves or copies files between Docker volumes or across the host server's filesystem
+**CronOps** is a lightweight, cron-based file management and system task scheduler for containerized environments. It automates copying, moving, archiving, and cleaning up files across mounted volumes — keeping your storage tidy, enabling seamless file exchange between containerized services, and triggering regular tasks in your development, integration or production environments.
 
-✂️ snipspins
+## 💡 Why CronOps?
 
-snipspins is a lightweight, cron-based file management tool designed to keep your container volumes tidy. It monitors directories, filters files with glob patterns, and performs actions like moving, archiving, or deleting—all defined in a simple YAML configuration.
+In containerized workflows, files often accumulate in volumes: downloads, logs, temporary exports, backups. CronOps acts as your **digital janitor**, running scheduled jobs that:
 
-💡 The Concept
-In a containerized world, files often pile up in volumes (downloads, logs, temporary exports). snipspins acts as your digital gardener:
+- **Execute** OS commands 
+- **Select** files using powerful **glob patterns** and
+  - **delete** them on a regular basis
+  - **copy** or **move** them to specific target path
+  - **archive** them automatically using date/time bases archive name patterns
+  - **process** them with OS commands (e.g. awk/sed, curl, untar/unzip, ...)
+  - **execute** scripts on them (sh/bash/cmd/powershell/node/lua, ...)
 
-- Snip: Precisely cut out the files you want (using includes/excludes).
-- Spins: Runs reliably in cycles (using cron schedules).
+All configured via simple, version-controllable ***.yml** based **job definition** files — no coding required.
 
-## Features
+## Top Features
 
-- ✅ **Cron** like job scheduling syntax 
-- ✅ **Glob** based **filtering** to select source files to be copied/moved
-- ✅ Ability to **change uid** and **gid ownership** of copied files/folders
-- ✅ Ability to **change modifier** of copied files/folders
-- ✅ Ability to automatically **remove destination files** after a specific period of time
-- ✅ Docker **HEALTHCHECK** indicating that jobs are scheduled correctly
-- ✅ Easy installation, setup and service maintenance (using Docker compose)
-- Zero config, error f
+- ✅ **Cron-like scheduling** – Flexible job timing using familiar cron syntax
+- ✅ **Glob-based filtering** – Precisely select source files to be processed 
+- ✅ **File operations** – Copy, move, delete, or archive files
+- ✅ **Command execution** – Process files with OS commands or custom scripts
+- ✅ **Permission management** – Change uid, gid, and file permissions on processed target files
+- ✅ **Automatic cleanup** – Remove target files after a configurable retention period
+- ✅ **Incremental processing** – Only process changed or new files since last run
+- ✅ **Dry-run mode** – Test jobs and execute scripts safely before applying changes
+- ✅ **Detailed logging** – Detailed job execution logs with stdout/stderr aggregation
+- ✅ **Hot reload** – Change job configs without restarting the service
+- ✅ **Admin API** – Trigger jobs, check status, pause/resume scheduling via secured REST-API
+- ✅ **OpenAPI Web UI** – Interactive API documentation and execution 
+- ✅ **Easy setup** – Runs with zero configuration. All config via environment variables
 
 ## Installation
 
 ### Install & run with Docker
 
-To start cronops container:
+CronOps is built and optimized to run as a Docker container itself. To install & run your cronops container:
 
 ```
 docker run 
   --name cronops
   -v ./config:/config
-  -v /home/docker/data:/data1 
-  -v /var/lib/docker/volumes:/data2 
+  -v ./logs:/data/logs
+  -v /home/docker/data:/io/source 
+  -v /home/docker/data:/io/target 
   restart unless-stopped 
   cronops:latest
 ```

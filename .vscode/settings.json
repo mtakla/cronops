@@ -1,10 +1,12 @@
 {
    "cSpell.words": [
+      "buildx",
       "chgrp",
       "coniuncta",
       "copycop",
       "crdownload",
       "cronops",
+      "deleteme",
       "extglob",
       "filegator",
       "filerever",
@@ -24,7 +26,6 @@
       "singlefile",
       "sunt",
       "tzdata",
-      "deleteme",
       "unstub",
       "webapi"
    ],

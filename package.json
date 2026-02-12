@@ -75,6 +75,7 @@
       "build": "tsc",
       "dev": "tsc && node ./dist/server.js",
       "start": "node ./dist/server.js",
-      "docker": "docker build --output type=docker,name=cronops.tar --tag nevereven/cronops:latest --tag nevereven/cronops:0.1 ."
+      "docker:build": "docker build -t ghcr.io/mtakla/cronops:latest -t ghcr.io/mtakla/cronops:0.1 .",
+      "docker:push":  "docker push ghcr.io/mtakla/cronops:latest"
    }
 }
