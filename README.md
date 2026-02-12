@@ -92,19 +92,13 @@ docker logs -f cronops
 
 After your first start you should see the following output:
 ```text
-Loading config from 'config/cronops.yaml' ...
 🖐  No jobs scheduled.
 ```
 
-Now you can config your jobs using the created default config file in `./config/cronops.yaml`. Details, see below. 
+Now you can add your job configuration files to the `./config/jobs/` directory. Each YAML file in this directory can contain one or more job definitions. Details, see below. 
 
 > [!NOTE]
-> You do not need to restart the server after changing the config file. The server identifies any changes and will hot reload the config file. If the config is not valid, an appropriate message will appear in the docker logs and the cronops docker service will change to "unhealthy" 
-
-```text
-Loading config from 'config/cronops.yaml' ...
-⛔ Cannot load config file. config/cronops.yaml: Unexpected non-whitespace character after JSON at position 571 (line 24 column 1) 
-```
+> You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
 
 ### Install & run in server environment
 
