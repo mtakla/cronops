@@ -54,10 +54,10 @@ docker run \
 
 The following docker volumes can be configured:
 
-- volume `/io/source` : Primary source directory, referenced in job paths as `$1`
-- volume `/io/target` : Primary target directory, referenced in job paths as `$1` 
-- volume `/io/source2` : Secondary source directory, referenced in job paths as `$2`
-- volume `/io/target2` : Secondary target directory, referenced in job paths as `$2`
+- volume `/io/source` : Primary source directory (CROPS_SOURCE_ROOT), referenced as `$1` in source paths
+- volume `/io/target` : Primary target directory (CROPS_TARGET_ROOT), referenced as `$1` in target paths
+- volume `/io/source2` : Secondary source directory (CROPS_SOURCE_2_ROOT), referenced as `$2` in source paths
+- volume `/io/target2` : Secondary target directory (CROPS_TARGET_2_ROOT), referenced as `$2` in target paths
 - volume `/config` : The exposed config directory where job configuration files are stored
 - volume `/data/temp` : Temp directory used for dry-run mode simulations
 - volume `/data/logs` : Directory where job logs and file history are stored
@@ -199,6 +199,9 @@ CronOps supports the following job actions:
 - **`exec`** - Execute a command or script. Use with `command`, `args`, `shell`, and `env` properties
 - **`call`** - Similar to `exec`, executes a command with arguments
 
+> [!TIP]
+> **Path References**: Use `$1`, `$2`, or `$3` in job paths to reference configured root directories. For source paths, these map to `CROPS_SOURCE_ROOT`, `CROPS_SOURCE_2_ROOT`, and `CROPS_SOURCE_3_ROOT`. For target paths, they map to `CROPS_TARGET_ROOT`, `CROPS_TARGET_2_ROOT`, and `CROPS_TARGET_3_ROOT`.
+
 ### Example Configurations
 
 #### Copy Files with Pattern Matching
@@ -267,10 +270,10 @@ CronOps supports the following job actions:
 | `shell`                      | (*Optional*) Shell to use for command execution. Can be `true` (use default shell) or a path to a shell binary                                                                 |
 | `args`                       | (*Optional*) Array of command arguments for `exec`/`call` actions                                                                                                              |
 | `env`                        | (*Optional*) Environment variables to pass to the command. Object with uppercase keys and string values                                                                         |
-| `source.dir`                 | The source directory path. Can be absolute or prefixed with `$1`, `$2`, or `$3` to reference configured root directories, e.g., `"$1/downloads"`                              |
+| `source.dir`                 | Source directory path. Can be absolute or use `$1` (CROPS_SOURCE_ROOT), `$2` (CROPS_SOURCE_2_ROOT), or `$3` (CROPS_SOURCE_3_ROOT), e.g., `"$1/downloads"`                   |
 | `source.includes`            | (*Optional*) Array of glob patterns to include files, relative to `source.dir`. Default: `["**/*"]`                                                                            |
 | `source.excludes`            | (*Optional*) Array of glob patterns to exclude files from processing                                                                                                           |
-| `target.dir`                 | The target directory path. Can be absolute or prefixed with `$1`, `$2`, or `$3` to reference configured root directories                                                       |
+| `target.dir`                 | Target directory path. Can be absolute or use `$1` (CROPS_TARGET_ROOT), `$2` (CROPS_TARGET_2_ROOT), or `$3` (CROPS_TARGET_3_ROOT)                                            |
 | `target.archive_name`        | (*For `archive` action*) Archive file name pattern with date placeholders, e.g., `"backup-{{yyyy-MM-dd}}.tgz"`                                                                |
 | `target.permissions.owner`   | (*Optional*) Change user/group ownership to `"uid:gid"` for all target files. Default: process owner unless `PUID` or `PGID` environment is set                               |
 | `target.permissions.file_mode` | (*Optional*) Change file permissions using octal (e.g., `"644"`) or symbolic mode (e.g., `"ugo+r"`). Default: "660"                                                         |
