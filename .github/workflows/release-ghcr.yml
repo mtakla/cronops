@@ -1,4 +1,4 @@
-name: Release CronOps to GHCR
+name: Release to ghcr.io
 
 on:
   workflow_dispatch:
