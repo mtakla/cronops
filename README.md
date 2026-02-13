@@ -144,8 +144,6 @@ CROPS_SOURCE_ROOT=/var/lib/docker/volumes   # change as you like
 CROPS_TARGET_ROOT=/var/opt/backups          # change as you like
 CROPS_CONFIG_DIR=/home/cronops/config       # optional. Default is ./config
 CROPS_LOG_DIR=/home/cronops/logs            # optional. Default is ~/.cronops
-PGID=1000                                   # optional
-PUID=1000                                   # optional
 ```
 
 To install and start CronOps, type in bash shell:
