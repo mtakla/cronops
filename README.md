@@ -168,14 +168,14 @@ You can add job configuration files to `/home/cronops/config/jobs/` directory. E
 
 The CronOps service can be configured with the following environment variables:
 
-| ENV                 | Description                                                                    | Docker defaults |
-| ------------------- | ------------------------------------------------------------------------------ | --------------- |
-| `CROPS_SOURCE_ROOT`   | Path to primary source directory (referenced as `$1` in job configs)           | `/io/source`    |
-| `CROPS_TARGET_ROOT   | Path to primary target directory (referenced as `$1` in job configs)           | `/io/target`    |
-| `CROPS_SOURCE_2_ROOT` | Path to secondary source directory (referenced as `$2` in job configs)         | `/io/source2`   |
-| `CROPS_TARGET_2_ROOT` | Path to secondary target directory (referenced as `$2` in job configs)         | `/io/target2`   |
-| `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory (referenced as `$3` in job configs)          | `/io/source3`   |
-| `CROPS_TARGET_3_ROOT` | Path to tertiary target directory (referenced as `$3` in job configs)          | `/io/target3`   |
+| ENV                   | Description                                                                    | Docker defaults |
+| --------------------- | ------------------------------------------------------------------------------ | --------------- |
+| `CROPS_SOURCE_ROOT`   | Path to primary source directory                                               | `/io/source`    |
+| `CROPS_TARGET_ROOT`   | Path to primary target directory                                               | `/io/target`    |
+| `CROPS_SOURCE_2_ROOT` | Path to secondary source directory                                             | `/io/source2`   |
+| `CROPS_TARGET_2_ROOT` | Path to secondary target directory                                             | `/io/target2`   |
+| `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory                                              | `/io/source3`   |
+| `CROPS_TARGET_3_ROOT` | Path to tertiary target directory                                              | `/io/target3`   |
 | `CROPS_CONFIG_DIR`    | Path to the config directory where job files are located                       | `/config`       |
 | `CROPS_TEMP_DIR`      | Path to temporary folder used for dry-run mode                                 | `/data/temp`    |
 | `CROPS_LOG_DIR`       | Path to directory where job logs and file history are stored                   | `/data/logs`    |
