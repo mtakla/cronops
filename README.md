@@ -40,7 +40,7 @@ All configured via simple, version-controllable ***.yml** based **job definition
 
 ### Install & run with Docker
 
-CronOps is built and optimized to run as a Docker container itself. To install & run your cronops container:
+CronOps is built and optimized to run as a Docker container itself: 
 
 ```
 docker run \
@@ -119,6 +119,19 @@ Now you can add your job configuration files to the `./config/jobs/` directory. 
 > [!NOTE]
 > You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
 
+
+### Updating using Docker compose
+
+When using docker compose, to update to the latest version of CronOps, just type
+
+```sh
+docker compose pull && docker compose up -d
+```
+
+in the same directoy where `compose.yaml` has been created. 
+
+
+
 ### Install & run in server environment
 
 This requires [node.js](https://nodejs.org/) (v24 ++) to be installed on your server. 
@@ -129,15 +142,13 @@ First step is to create an empty app directory with a `.env` file that contains 
 NODE_ENV=production
 CROPS_SOURCE_ROOT=/var/lib/docker/volumes   # change as you like
 CROPS_TARGET_ROOT=/var/opt/backups          # change as you like
-CROPS_SOURCE_2_ROOT=/mnt/data               # optional
-CROPS_TARGET_2_ROOT=/mnt/backups            # optional
 CROPS_CONFIG_DIR=/home/cronops/config       # optional. Default is ./config
 CROPS_LOG_DIR=/home/cronops/logs            # optional. Default is ~/.cronops
 PGID=1000                                   # optional
 PUID=1000                                   # optional
 ```
 
-To install and start cronops, type in bash shell:
+To install and start CronOps, type in bash shell:
 
 ```bash
 npx dotenvx run -- npx @mtakla/cronops &> /var/log/cronops.log
@@ -150,42 +161,30 @@ This will ...
 - create jobs directory in `/home/cronops/config/jobs` if it doesn't exist
 - switch to idle mode as no active jobs are configured 
 
-You can add job configuration files to `/home/cronops/config/jobs/` directory. Each YAML file in this directory defines one or more jobs. The server will hot reload when job files are added, modified, or removed.
-
-## Updating
-
-### Updating using Docker compose
-
-When using docker compose, to update to the latest version of cronops, just type
-
-```sh
-docker compose pull && docker compose up -d
-```
-
-in the same directoy where `compose.yaml` has been created. 
+You can add job configuration files to `/home/cronops/config/jobs/` directory. Each YAML file in this directory defines a job. The server will hot reload when job files are added, modified, or removed.
 
 
 ## Configuration 
 
-The cronops service can be configured with the following environment variables:
+The CronOps service can be configured with the following environment variables:
 
 | ENV                 | Description                                                                    | Docker defaults |
 | ------------------- | ------------------------------------------------------------------------------ | --------------- |
-| CROPS_SOURCE_ROOT   | Path to primary source directory (referenced as `$1` in job configs)           | `/io/source`    |
-| CROPS_TARGET_ROOT   | Path to primary target directory (referenced as `$1` in job configs)           | `/io/target`    |
-| CROPS_SOURCE_2_ROOT | Path to secondary source directory (referenced as `$2` in job configs)         | `/io/source2`   |
-| CROPS_TARGET_2_ROOT | Path to secondary target directory (referenced as `$2` in job configs)         | `/io/target2`   |
-| CROPS_SOURCE_3_ROOT | Path to tertiary source directory (referenced as `$3` in job configs)          | `/io/source3`   |
-| CROPS_TARGET_3_ROOT | Path to tertiary target directory (referenced as `$3` in job configs)          | `/io/target3`   |
-| CROPS_CONFIG_DIR    | Path to the config directory where job files are located                       | `/config`       |
-| CROPS_TEMP_DIR      | Path to temporary folder used for dry-run mode                                 | `/data/temp`    |
-| CROPS_LOG_DIR       | Path to directory where job logs and file history are stored                   | `/data/logs`    |
-| CROPS_HOST          | Host address for the Admin API server                                          | `0.0.0.0`       |
-| CROPS_PORT          | Port for the Admin API server                                                  | `8083`          |
-| CROPS_EXEC_SHELL    | (*Optional*) Default shell for `exec` actions. Can be `false`, `true`, or path | `false`         |
-| CROPS_API_KEY       | (*Optional*) API key for securing the Admin API endpoints                      | -               |
-| CROPS_BASE_URL      | (*Optional*) Base URL for admin API and OpenAPI docs                           | -               |
-| TZ                  | (*Optional*) Timezone for cron scheduling (standard timezone format)           | `UTC`           |
+| `CROPS_SOURCE_ROOT`   | Path to primary source directory (referenced as `$1` in job configs)           | `/io/source`    |
+| `CROPS_TARGET_ROOT   | Path to primary target directory (referenced as `$1` in job configs)           | `/io/target`    |
+| `CROPS_SOURCE_2_ROOT` | Path to secondary source directory (referenced as `$2` in job configs)         | `/io/source2`   |
+| `CROPS_TARGET_2_ROOT` | Path to secondary target directory (referenced as `$2` in job configs)         | `/io/target2`   |
+| `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory (referenced as `$3` in job configs)          | `/io/source3`   |
+| `CROPS_TARGET_3_ROOT` | Path to tertiary target directory (referenced as `$3` in job configs)          | `/io/target3`   |
+| `CROPS_CONFIG_DIR`    | Path to the config directory where job files are located                       | `/config`       |
+| `CROPS_TEMP_DIR`      | Path to temporary folder used for dry-run mode                                 | `/data/temp`    |
+| `CROPS_LOG_DIR`       | Path to directory where job logs and file history are stored                   | `/data/logs`    |
+| `CROPS_HOST`          | Host address for the Admin API server                                          | `0.0.0.0`       |
+| `CROPS_PORT`          | Port for the Admin API server                                                  | `8083`          |
+| `CROPS_EXEC_SHELL`    | (*Optional*) Default shell for `exec` actions. Can be `false`, `true`, or path | `false`         |
+| `CROPS_API_KEY`       | (*Optional*) API key for securing the Admin API endpoints                      | -               |
+| `CROPS_BASE_URL`      | (*Optional*) Base URL for admin API and OpenAPI docs                           | -               |
+| `TZ`                  | (*Optional*) Timezone for cron scheduling (standard timezone format)           | `UTC`           |
 
 
 ## Job Configuration
@@ -380,7 +379,7 @@ If the exec action is configured to run on selected `source` files:
 > [!WARNING]
 > **Hazardous Misconfiguration** 
 > 
-> If your cronops docker container is running with Root Privileges and the persistent volumes (source/target directories) are mounted to critical system directories of the hosting operating system (e.g., `/etc`, `/var`, etc.), this creates an extremely high **security risk**: 
+> If your CronOps docker container is running with Root Privileges and the persistent volumes (source/target directories) are mounted to critical system directories of the hosting operating system (e.g., `/etc`, `/var`, etc.), this creates an extremely high **security risk**: 
 > 
 > - **System File Overwrite**: The container can access, modify, or delete crucial files and directories on the host machine via the exposed volume paths.
 > - **Host System Damage**: If the volume mounts are not correctly configured (e.g., if a Bind Mount unintentionally exposes the wrong host directory), the root user inside the container can potentially modify or delete system-critical data on the host.
