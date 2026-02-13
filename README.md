@@ -384,21 +384,8 @@ If the exec action is configured to run on selected `source` files:
 > 
 > - **System File Overwrite**: The container can access, modify, or delete crucial files and directories on the host machine via the exposed volume paths.
 > - **Host System Damage**: If the volume mounts are not correctly configured (e.g., if a Bind Mount unintentionally exposes the wrong host directory), the root user inside the container can potentially modify or delete system-critical data on the host.
->
-
 
 
 ## License
 
-CronOps is under [ISC License](https://github.com/mtakla/cronops/blob/master/LICENSE)
-
-```
-   ____                  ___            
-  / ___|_ __ ___  _ __  / _ \ _ __  ___ 
- | |   | '__/ _ \| '_ \| | | | '_ \/ __|
- | |___| | | (_) | | | | |_| | |_) \__ \
-  \____|_|  \___/|_| |_|\___/| .__/|___/
-                             |_|       
-  Made with ❤ in EU   
-```
-
+CronOps is under [ISC License](https://github.com/mtakla/cronops/blob/master/LICENSE). Made with ❤ in EU
