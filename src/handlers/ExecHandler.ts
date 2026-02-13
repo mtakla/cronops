@@ -95,14 +95,14 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
          logDir: this.setup.logDir,
          file: "",
          fileDir: "",
-         fileBase: "",
          fileName: "",
+         fileBase: "",
          fileExt: "",
       };
 
       if (entry) {
-         const { dir: fileDir, base: fileBase, name: fileName, ext: fileExt } = parse(entry.sourcePath);
-         Object.assign(vars, { file: entry.sourcePath, fileDir, fileBase, fileName, fileExt });
+         const { dir: fileDir, base: fileName, name: fileBase, ext: fileExt } = parse(entry.sourcePath);
+         Object.assign(vars, { file: entry.sourcePath, fileDir, fileName, fileBase, fileExt });
       }
 
       const env: Record<string, string> = {};
@@ -125,8 +125,8 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
          Object.assign(env, {
             CROPS_FILE: vars.file,
             CROPS_FILE_DIR: vars.fileDir,
-            CROPS_FILE_BASE: vars.fileBase,
             CROPS_FILE_NAME: vars.fileName,
+            CROPS_FILE_BASE: vars.fileBase,
             CROPS_FILE_EXT: vars.fileExt,
          });
       }

@@ -54,13 +54,15 @@ docker run \
 
 The following docker volumes can be configured:
 
-- volume `/io/source` : Primary source directory (CROPS_SOURCE_ROOT), referenced as `$1` in source paths
-- volume `/io/target` : Primary target directory (CROPS_TARGET_ROOT), referenced as `$1` in target paths
-- volume `/io/source2` : Secondary source directory (CROPS_SOURCE_2_ROOT), referenced as `$2` in source paths
-- volume `/io/target2` : Secondary target directory (CROPS_TARGET_2_ROOT), referenced as `$2` in target paths
-- volume `/config` : The exposed config directory where job configuration files are stored
-- volume `/data/temp` : Temp directory used for dry-run mode simulations
-- volume `/data/logs` : Directory where job logs and file history are stored
+- `/config` : The exposed config directory where job configuration files and scripts are stored
+- `/data/temp` : Temp directory used for dry-run mode simulations
+- `/data/logs` : Directory where job logs and file history are stored
+- `/io/source` : Primary source directory (CROPS_SOURCE_ROOT), referenced as `$1` in source paths
+- `/io/target` : Primary target directory (CROPS_TARGET_ROOT), referenced as `$1` in target paths
+- `/io/source2` : Secondary source directory (CROPS_SOURCE_2_ROOT), referenced as `$2` in source paths
+- `/io/target2` : Secondary target directory (CROPS_TARGET_2_ROOT), referenced as `$2` in target paths
+- `/io/source3` : Third source directory (CROPS_SOURCE_2_ROOT), referenced as `$2` in source paths
+- `/io/target3` : Third target directory (CROPS_TARGET_2_ROOT), referenced as `$2` in target paths
 
 ### Install & run with Docker compose
 
@@ -79,6 +81,7 @@ services:
       - ./temp:/data/temp
       - ./logs:/data/logs
     environment:
+      CROPS_API_KEY: 54bad6e77cf8cbc3c65ca76d127138d50e63adc29fb14450f1d60f2693b8676c  # <-- change me!
       TZ: Europe/UTC
 ```
 
@@ -92,8 +95,24 @@ docker logs -f cronops
 
 After your first start you should see the following output:
 ```text
-🖐  No jobs scheduled.
-```
+   ____                      ___              
+  / ___| _ __  ___   _ __   / _ \  _ __   ___ 
+ | |    | '__|/ _ \ | '_ \ | | | || '_ \ / __|
+ | |___ | |  | (_) || | | || |_| || |_) |\__ \
+  \____||_|   \___/ |_| |_| \___/ | .__/ |___/
+                                  |_|         
+
+☰ CronOps v0.1.1-rc2.4 »Omnia coniuncta sunt«
+Monitoring job configs in /config/workspace/cronops/config/jobs ...
+
+Web API enabled. HTTP Server is listening on port 8118 ...
+ ⎆ API endpoint http://127.0.0.1:8118/api (secured)
+ ⎆ OpenAPI docs http://127.0.0.1:8118/docs
+ ⎆ Health check http://127.0.0.1:8118/health
+
+Job config loaded (1 active job)
+ 🕔 [example-job3] scheduled (*/5 * * * *)
+ ```
 
 Now you can add your job configuration files to the `./config/jobs/` directory. Each YAML file in this directory can contain one or more job definitions. Details, see below. 
 
@@ -146,139 +165,214 @@ docker compose pull && docker compose up -d
 in the same directoy where `compose.yaml` has been created. 
 
 
+## Configuration 
+
+The cronops service can be configured with the following environment variables:
+
+| ENV                 | Description                                                                    | Docker defaults |
+| ------------------- | ------------------------------------------------------------------------------ | --------------- |
+| CROPS_SOURCE_ROOT   | Path to primary source directory (referenced as `$1` in job configs)           | `/io/source`    |
+| CROPS_TARGET_ROOT   | Path to primary target directory (referenced as `$1` in job configs)           | `/io/target`    |
+| CROPS_SOURCE_2_ROOT | Path to secondary source directory (referenced as `$2` in job configs)         | `/io/source2`   |
+| CROPS_TARGET_2_ROOT | Path to secondary target directory (referenced as `$2` in job configs)         | `/io/target2`   |
+| CROPS_SOURCE_3_ROOT | Path to tertiary source directory (referenced as `$3` in job configs)          | `/io/source3`   |
+| CROPS_TARGET_3_ROOT | Path to tertiary target directory (referenced as `$3` in job configs)          | `/io/target3`   |
+| CROPS_CONFIG_DIR    | Path to the config directory where job files are located                       | `/config`       |
+| CROPS_TEMP_DIR      | Path to temporary folder used for dry-run mode                                 | `/data/temp`    |
+| CROPS_LOG_DIR       | Path to directory where job logs and file history are stored                   | `/data/logs`    |
+| CROPS_HOST          | Host address for the Admin API server                                          | `0.0.0.0`       |
+| CROPS_PORT          | Port for the Admin API server                                                  | `8083`          |
+| CROPS_EXEC_SHELL    | (*Optional*) Default shell for `exec` actions. Can be `false`, `true`, or path | `false`         |
+| CROPS_API_KEY       | (*Optional*) API key for securing the Admin API endpoints                      | -               |
+| CROPS_BASE_URL      | (*Optional*) Base URL for admin API and OpenAPI docs                           | -               |
+| TZ                  | (*Optional*) Timezone for cron scheduling (standard timezone format)           | `UTC`           |
+
+
 ## Job Configuration
 
-Jobs are configured as YAML files in the `./config/jobs/` directory. Each YAML file can contain one or more job definitions. By default, the service starts with no active jobs.
+Jobs are configured as YAML files in the `CROPS_CONFIG_DIR/jobs` directory. Each YAML file can contain one or more job definitions. .
 
-Create job configuration files as arrays of jobs. For example, create `./config/jobs/my-jobs.yaml`:
-
+Example job config  `./config/jobs/example.yaml`
 
 ```yaml
-- action: move   # exec|call|copy|move|delete|archive
-  cron: "*/5 * * * * *"
-  source:
-    dir: $1/nzbget/config/data/download
-    includes:
-      - "**/*.mp4"
-  target:
-    dir: $1/filegator/micha/downloads
-    permissions:
-      owner: "1000:1000"
-      file_mode: "444"
-      dir_mode: "711"
-    retention: 12h
-  dry_run: true
-  enabled: false
+action: move   # exec|call|copy|move|delete|archive
+cron: "*/5 * * * * *"
+source:
+  dir: $1/nzbget/config/data/download
+  includes:
+    - "**/*.mp4"
+target:
+  dir: $1/filegator/micha/downloads
+  permissions:
+    owner: "1000:1000"
+    file_mode: "444"
+    dir_mode: "711"
+  retention: 12h
+dry_run: true
+enabled: false
 ```
 
-You can change the job configuration at any time and the server will hot reload and schedule the new job configuration. 
-
 > [!NOTE]
-> Be aware that once the job config has been changed and saved, all active running jobs will be softly terminated and rescheduled by applying the new job configuration. 
+You can change the job configuration at any time and the server will hot reload and schedule the new job configuration.  
+Be aware that once the job config has been changed, active running tasks will be terminated and the job will be rescheduled
 
 
 ### Job Actions
 
-CronOps supports the following job actions:
+CronOps supports 5 different job actions:
 
-#### File Operations
+#### File based actions
 
 - **`copy`** - Copy files from source to target directory while preserving originals
 - **`move`** - Move files from source to target directory (removes originals after successful copy)
 - **`delete`** - Delete files matching the source patterns
 - **`archive`** - Create a compressed tar.gz archive of matched files in the target directory
 
-#### Command Execution
+#### Command execution action
 
 - **`exec`** - Execute a command or script. Use with `command`, `args`, `shell`, and `env` properties
-- **`call`** - Similar to `exec`, executes a command with arguments
+
 
 > [!TIP]
-> **Path References**: Use `$1`, `$2`, or `$3` in job paths to reference configured root directories. For source paths, these map to `CROPS_SOURCE_ROOT`, `CROPS_SOURCE_2_ROOT`, and `CROPS_SOURCE_3_ROOT`. For target paths, they map to `CROPS_TARGET_ROOT`, `CROPS_TARGET_2_ROOT`, and `CROPS_TARGET_3_ROOT`.
+> **Path References**: Use `$1`, `$2`, or `$3` in job paths to reference configured root directories. 
+> For source paths, these map to `CROPS_SOURCE_ROOT`, `CROPS_SOURCE_2_ROOT`, and `CROPS_SOURCE_3_ROOT`. 
+> For target paths, they map to `CROPS_TARGET_ROOT`, `CROPS_TARGET_2_ROOT`, and `CROPS_TARGET_3_ROOT`.
 
-### Example Configurations
+### Job Configuration examples
 
 #### Copy Files with Pattern Matching
 
 ```yaml
-- action: copy
-  cron: "0 2 * * *"  # Daily at 2 AM
-  source:
-    dir: $1/downloads
-    includes:
-      - "**/*.pdf"
-      - "**/*.doc"
-    excludes:
-      - "**/*.tmp"
-  target:
-    dir: $1/archive/documents
-    permissions:
-      owner: "1000:1000"
-      file_mode: "644"
-      dir_mode: "755"
-    retention: "30d"
-  enabled: true
+action: copy
+cron: "0 2 * * *"  # Daily at 2 AM
+source:
+  dir: $1/downloads
+  includes:
+    - "**/*.pdf"
+    - "**/*.doc"
+  excludes:
+    - "**/*.tmp"
+target:
+  dir: $1/archive/documents
+  permissions:
+    owner: "1000:1000"
+    file_mode: "644"
+    dir_mode: "755"
+  retention: "30d"
+enabled: true
 ```
 
-#### Archive with Date-based Naming
+#### Create an archive 
 
 ```yaml
-- action: archive
-  cron: "0 0 * * 0"  # Weekly on Sunday at midnight
-  source:
-    dir: $1/logs
-    includes:
-      - "**/*.log"
-    excludes:
-      - ".git/**"
-      - "node_modules/**"
-  target:
-    dir: $1/backups
-    archive_name: "logs-{{yyyy-MM-dd}}.tgz"
-  enabled: true
+action: archive
+cron: "0 0 * * 0"  # Weekly on Sunday at midnight
+source:
+  dir: $1/logs
+  includes:
+    - "**/*.log"
+  excludes:
+    - ".git/**"
+    - "node_modules/**"
+target:
+  dir: $1/backups
+  archive_name: "logs-{{yyyy-MM-dd}}.tgz"
+enabled: true
 ```
 
 #### Execute Custom Command
 
 ```yaml
-- action: exec
-  cron: "*/15 * * * *"  # Every 15 minutes
-  command: "node"
-  args:
-    - "--experimental-vm-modules"
-    - "/scripts/cleanup.js"
-  env:
-    LOG_LEVEL: "info"
-    API_TOKEN: "secret123"
-  enabled: true
+action: exec
+cron: "*/15 * * * *"  # Every 15 minutes
+command: "node"
+args:
+  - "--experimental-vm-modules"
+  - "{scriptDir}/cleanup.js"
+env:
+  LOG_LEVEL: "info"
+  API_TOKEN: "secret123"
+enabled: true
 ```
+
+### Command execution parameters
+
+For jobs of action type `exec`, you can use dynamic parameters in your  `command`, `args` or custom `env` entries that will be resolved before the system command is executed: 
+
+| Parameter     | Description                                                      |
+| ------------- | ---------------------------------------------------------------- |
+| `{jobId}`     | job identifier                                                   |
+| `{sourceDir}` | absolute path to the job source directory                        |
+| `{targetDir}` | absolute path to the job target directory (or CROPS_TARGET_ROOT) |
+| `{scriptDir}` | absolute path to the configured script directory                 |
+| `{tempDir}`   | absolute path to the configured temp directory                   |
+| `{logDir}`    | absolute path to the configured log directory                    |
+
+
+If the exec action is configured to run on selected `source` files:
+
+| Parameter    | Description                                                                  |
+| ------------ | ---------------------------------------------------------------------------- |
+| `{file}`     | absolute path to the processed file, e.g. `/io/source/foo/bar.txt`           |
+| `{fileDir}`  | absolute path to the parent dir of the processed file, e.g. `/io/source/foo` |
+| `{fileName}` | name of the processed file, e.g. `bar.txt`                                   |
+| `{fileBase}` | base name of the processed file without extension, e.g. `bar`                |
+| `{fileExt}`  | extension of the processed file, e.g. `.txt`                                 |
+
+### Command execution ENV defaults
+
+For jobs of action type `exec` the following environment variables are available by default when the os command is executed.
+
+| Parameter          | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `CROPS_JOB_ID`     | job identifier                                                   |
+| `CROPS_SOURCE_DIR` | absolute path to the job source directory                        |
+| `CROPS_TARGET_DIR` | absolute path to the job target directory (or CROPS_TARGET_ROOT) |
+| `CROPS_SCRIPT_DIR` | absolute path to the configured script directory                 |
+| `CROPS_TEMP_DIR`   | absolute path to the configured temp directory                   |
+| `CROPS_LOG_DIR`    | absolute path to the configured log directory                    |
+| `CROPS_DRY_RUN`    | "true", if dry_run mode is enabled                               |
+| `CROPS_VERBOSE`    | "true", if dry_run mode is enabled                               |
+
+
+If the exec action is configured to run on selected `source` files:
+
+| Parameter         | Description                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| `CROPS_FILE`      | absolute path to the processed source file, e.g. `/io/source/foo/bar.txt`           |
+| `CROPS_FILE_DIR`  | absolute path to the parent dir of the processed source file, e.g. `/io/source/foo` |
+| `CROPS_FILE_NAME` | file name of the processed source file, e.g. `bar.txt`                              |
+| `CROPS_FILE_BASE` | base name of the processed source file without extension, e.g. `bar`                |
+| `CROPS_FILE_EXT`  | extension of the processed source file, e.g. `.txt`                                 |
+
 
 
 ### Job properties
 
-| Property                     | Description                                                                                                                                                                     |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `action`                     | **Required**. The action to perform. One of: `exec`, `call`, `copy`, `move`, `delete`, `archive`                                                                               |
-| `cron`                       | (*Optional*) Cron-like scheduling string, e.g., `*/2 * * * *`. See [node-cron](https://nodecron.com/cron-syntax.html) documentation for details. If omitted, job runs once.   |
-| `command`                    | (*For `exec`/`call` actions*) Command to execute, e.g., `"node"`, `"/bin/bash"`                                                                                               |
-| `shell`                      | (*Optional*) Shell to use for command execution. Can be `true` (use default shell) or a path to a shell binary                                                                 |
-| `args`                       | (*Optional*) Array of command arguments for `exec`/`call` actions                                                                                                              |
-| `env`                        | (*Optional*) Environment variables to pass to the command. Object with uppercase keys and string values                                                                         |
-| `source.dir`                 | Source directory path. Can be absolute or use `$1` (CROPS_SOURCE_ROOT), `$2` (CROPS_SOURCE_2_ROOT), or `$3` (CROPS_SOURCE_3_ROOT), e.g., `"$1/downloads"`                   |
-| `source.includes`            | (*Optional*) Array of glob patterns to include files, relative to `source.dir`. Default: `["**/*"]`                                                                            |
-| `source.excludes`            | (*Optional*) Array of glob patterns to exclude files from processing                                                                                                           |
-| `target.dir`                 | Target directory path. Can be absolute or use `$1` (CROPS_TARGET_ROOT), `$2` (CROPS_TARGET_2_ROOT), or `$3` (CROPS_TARGET_3_ROOT)                                            |
-| `target.archive_name`        | (*For `archive` action*) Archive file name pattern with date placeholders, e.g., `"backup-{{yyyy-MM-dd}}.tgz"`                                                                |
-| `target.permissions.owner`   | (*Optional*) Change user/group ownership to `"uid:gid"` for all target files. Default: process owner unless `PUID` or `PGID` environment is set                               |
+| Property                       | Description                                                                                                                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `action`                       | **Required**. The action to perform. One of: `exec`, `call`, `copy`, `move`, `delete`, `archive`                                                                            |
+| `cron`                         | (*Optional*) Cron-like scheduling string, e.g., `*/2 * * * *`. See [node-cron](https://nodecron.com/cron-syntax.html) documentation for details. If omitted, job runs once. |
+| `command`                      | (*For `exec`/`call` actions*) Command to execute, e.g., `"node"`, `"/bin/bash"`                                                                                             |
+| `shell`                        | (*Optional*) Shell to use for command execution. Can be `true` (use default shell) or a path to a shell binary                                                              |
+| `args`                         | (*Optional*) Array of command arguments for `exec`/`call` actions                                                                                                           |
+| `env`                          | (*Optional*) Environment variables to pass to the command. Object with uppercase keys and string values                                                                     |
+| `source.dir`                   | Source directory path. Can be absolute or use `$1` (CROPS_SOURCE_ROOT), `$2` (CROPS_SOURCE_2_ROOT), or `$3` (CROPS_SOURCE_3_ROOT), e.g., `"$1/downloads"`                   |
+| `source.includes`              | (*Optional*) Array of glob patterns to include files, relative to `source.dir`. Default: `["**/*"]`                                                                         |
+| `source.excludes`              | (*Optional*) Array of glob patterns to exclude files from processing                                                                                                        |
+| `target.dir`                   | Target directory path. Can be absolute or use `$1` (CROPS_TARGET_ROOT), `$2` (CROPS_TARGET_2_ROOT), or `$3` (CROPS_TARGET_3_ROOT)                                           |
+| `target.archive_name`          | (*For `archive` action*) Archive file name pattern with date placeholders, e.g., `"backup-{{yyyy-MM-dd}}.tgz"`                                                              |
+| `target.permissions.owner`     | (*Optional*) Change user/group ownership to `"uid:gid"` for all target files. Default: process owner unless `PUID` or `PGID` environment is set                             |
 | `target.permissions.file_mode` | (*Optional*) Change file permissions using octal (e.g., `"644"`) or symbolic mode (e.g., `"ugo+r"`). Default: "660"                                                         |
 | `target.permissions.dir_mode`  | (*Optional*) Change directory permissions using octal (e.g., `"755"`) or symbolic mode (e.g., `"ugo+rx"`). Default: "770"                                                   |
-| `target.retention`           | (*Optional*) Time period after which target files will be deleted, e.g., `"10d"`, `"12h"`. Uses [ms](https://www.npmjs.com/package/ms) format. Default: files are kept       |
-| `dry_run`                    | (*Optional*) If `true`, simulate the operation without making actual changes. Source files are never modified in dry-run mode. Default: `false`                                |
-| `verbose`                    | (*Optional*) Enable verbose logging for this job. Default: `false`                                                                                                             |
-| `enabled`                    | (*Optional*) If `false`, the job will not be scheduled. Default: `true`                                                                                                        |
+| `target.retention`             | (*Optional*) Time period after which target files will be deleted, e.g., `"10d"`, `"12h"`. Uses [ms](https://www.npmjs.com/package/ms) format. Default: files are kept      |
+| `dry_run`                      | (*Optional*) If `true`, simulate the operation without making actual changes. Source files are never modified in dry-run mode. Default: `false`                             |
+| `verbose`                      | (*Optional*) Enable verbose logging for this job. Default: `false`                                                                                                          |
+| `enabled`                      | (*Optional*) If `false`, the job will not be scheduled. Default: `true`                                                                                                     |
 
 
-### Docker Issues & Trouble shooting
+
+## Security considerations & Trouble shooting
 
 > [!NOTE]
 > It is strongly advised against accessing or modifying the data directly on the host system within Docker's internal volume storage path (typically `/var/lib/docker/volumes/`). 
@@ -292,30 +386,6 @@ CronOps supports the following job actions:
 > - **Host System Damage**: If the volume mounts are not correctly configured (e.g., if a Bind Mount unintentionally exposes the wrong host directory), the root user inside the container can potentially modify or delete system-critical data on the host.
 >
 
-
-## Environment settings
-
-The cronops service can be configured with the following environment variables:
-
-| ENV                  | Description                                                                          | Docker defaults      |
-| -------------------- | ------------------------------------------------------------------------------------ | -------------------- |
-| CROPS_SOURCE_ROOT    | Path to primary source directory (referenced as `$1` in job configs)                | `/io/source`         |
-| CROPS_TARGET_ROOT    | Path to primary target directory (referenced as `$1` in job configs)                | `/io/target`         |
-| CROPS_SOURCE_2_ROOT  | Path to secondary source directory (referenced as `$2` in job configs)              | `/io/source2`        |
-| CROPS_TARGET_2_ROOT  | Path to secondary target directory (referenced as `$2` in job configs)              | `/io/target2`        |
-| CROPS_SOURCE_3_ROOT  | Path to tertiary source directory (referenced as `$3` in job configs)               | `/io/source3`        |
-| CROPS_TARGET_3_ROOT  | Path to tertiary target directory (referenced as `$3` in job configs)               | `/io/target3`        |
-| CROPS_CONFIG_DIR     | Path to the config directory where job files are located                            | `/config`            |
-| CROPS_TEMP_DIR       | Path to temporary folder used for dry-run mode                                       | `/data/temp`         |
-| CROPS_LOG_DIR        | Path to directory where job logs and file history are stored                        | `/data/logs`         |
-| CROPS_HOST           | Host address for the Admin API server                                                | `0.0.0.0`            |
-| CROPS_PORT           | Port for the Admin API server                                                        | `8083`               |
-| CROPS_API_KEY        | (*Optional*) API key for securing the Admin API endpoints                            | -                    |
-| CROPS_BASE_URL       | (*Optional*) Base URL for the OpenAPI documentation                                  | -                    |
-| CROPS_EXEC_SHELL     | (*Optional*) Default shell for `exec` actions. Can be `false`, `true`, or path      | `false`              |
-| TZ                   | Timezone for cron scheduling (standard timezone format)                             | `UTC`                |
-| PUID                 | (*Optional*) Default user ID for created files                                       | -                    |
-| PGID                 | (*Optional*) Default group ID for created files                                      | -                    |
 
 
 ## License
