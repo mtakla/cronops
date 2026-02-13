@@ -6,6 +6,9 @@
 
 **CronOps** is a lightweight, cron-based file management and system task scheduler for containerized environments. It automates copying, moving, archiving, and cleaning up files across mounted volumes — keeping your storage tidy, enabling seamless file exchange between containerized services, and triggering regular tasks in your development, integration or production environments.
 
+> [!WARNING]
+> Early BETA. Not recommended for use in a production environment!
+
 ## 💡 Why CronOps?
 
 In containerized workflows, files often accumulate in volumes: downloads, logs, temporary exports, backups. CronOps acts as your **digital janitor**, running scheduled jobs that:
