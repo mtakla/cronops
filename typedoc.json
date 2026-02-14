@@ -2,7 +2,9 @@
     "$schema": "https://typedoc.org/schema.json",
     "entryPoints": [
         "./src/index.ts",
-        "./src/JobScheduler.ts",
+        "./src/types/Config.types.ts",
+        "./src/types/Options.types.ts",
+        "./src/tasks/JobScheduler.ts",
         "./src/tasks/JobLoader.ts",
         "./src/tasks/JobRunner.ts"
     ],

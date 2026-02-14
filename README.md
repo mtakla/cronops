@@ -45,9 +45,10 @@ All configured via simple, version-controllable ***.yml** based **job definition
 
 CronOps is built and optimized to run as a Docker container itself: 
 
-```
+```sh
 docker run \
   --name cronops \
+  --user 1000:1000 \
   -v ./config:/config \
   -v ./data:/data \
   -v ./data:/io/source \
@@ -68,7 +69,7 @@ If your container is running there is an **example job** active that is schedule
 
 The corresponding job config can be found in `./config/jobs/example-job.yaml`:
 
-```
+```yaml
 action: move
 cron: "*/5 * * * * *"
 source:
@@ -91,7 +92,7 @@ Now you can add more job configuration files to `./config/jobs`. For detailes, s
 To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
 
 
-### Install & run with Docker compose
+### Docker compose
 
 To install and run CronOps via docker compose, just create a `compose.yaml` file:
 
@@ -129,10 +130,10 @@ This requires [Node.js](https://nodejs.org/) (>= v24) to be installed on your se
 First step is to create an empty CronOps app directory with a `.env` file that contains your configuration settings, e.g.:
 
 ```ini
-CROPS_SOURCE_ROOT=/home/joe                 # change as you like
-CROPS_TARGET_ROOT=/home/joe                 # change as you like
-CROPS_CONFIG_DIR=./config                   # Default is ~/.cronops/config
-CROPS_LOG_DIR=./logs                        # Default is ~/.cronops/logs
+CROPS_SOURCE_ROOT=./data                    # change as you like
+CROPS_TARGET_ROOT=./data                    # change as you like
+CROPS_CONFIG_DIR=./config                   # default is ~/.cronops/config
+CROPS_LOG_DIR=./logs                        # default is ~/.cronops/logs
 ```
 
 To install & start CronOps, type:
@@ -148,7 +149,6 @@ This will ...
 - start the cronops service with the loaded environment settings 
 - create config directory in `./config` if it doesn't exist
 - create logs directory in `./logs` if it doesn't exist
-- switch to idle mode as no active jobs are configured 
 
 You can now add job configuration files to `./config/jobs` directory. Each YAML file in this directory defines a job. The server will hot reload when job files are added, modified, or removed.
 
