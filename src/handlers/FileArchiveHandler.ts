@@ -13,7 +13,7 @@ export class FileArchiveHandler extends AbstractHandler implements ActionHandler
     * @throws JobError
     */
    override validateJob(job: Job) {
-      super.assertSourceDirExist(job);
+      //super.assertSourceDirExist(job);
       super.assertTargetConfigExists(job);
    }
 

@@ -57,6 +57,9 @@ export class JobRunner extends AbstractTask<RunnerResult> {
       try {
          // process files if source selector is defined
          if (job.source) {
+            // ensure source dir exist
+            await ensureDir(ctx.sourceDir);
+
             // determine source entries using fast-glob
             const entries = await glob(job.sourceIncludes, { cwd: ctx.sourceDir, ignore: job.sourceExcludes, dot: true, extglob: false });
 

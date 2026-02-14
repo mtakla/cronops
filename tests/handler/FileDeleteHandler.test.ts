@@ -35,12 +35,6 @@ describe(FileDeleteHandler.name, () => {
       expect(() => {
          handler.validateJob({ id: "valid-job", action: "delete", source: { dir: "/subfolder" } });
       }).not.toThrow(JobError);
-      expect(() => {
-         handler.validateJob({ id: "missing-source-config", action: "delete" });
-      }).toThrow(JobError);
-      expect(() => {
-         handler.validateJob({ id: "missing-source-dir", action: "delete", source: { dir: "unknown" } });
-      }).toThrow(JobError);
    });
 
    it("processFiles() on no files should work", async () => {

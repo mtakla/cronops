@@ -50,41 +50,10 @@ docker run \
   --name cronops \
   -v ./config:/config \
   -v ./data:/data \
-  -v ~:/io/source \
-  -v ~:/io/target \
+  -v ./data:/io/source \
+  -v ./data:/io/target \
   --restart unless-stopped \
   ghcr.io/mtakla/cronops:latest
-```
-
-The following docker volumes can be configured:
-
-- `/config` : The exposed config directory where job configuration files and scripts are stored
-- `/data/temp` : Temp directory used for dry-run mode simulations
-- `/data/logs` : Directory where job logs and file history are stored
-- `/io/source` : Primary source directory (CROPS_SOURCE_ROOT), referenced as `$1` in source paths
-- `/io/target` : Primary target directory (CROPS_TARGET_ROOT), referenced as `$1` in target paths
-- `/io/source2` : Secondary source directory (CROPS_SOURCE_2_ROOT), referenced as `$2` in source paths
-- `/io/target2` : Secondary target directory (CROPS_TARGET_2_ROOT), referenced as `$2` in target paths
-- `/io/source3` : Third source directory (CROPS_SOURCE_2_ROOT), referenced as `$2` in source paths
-- `/io/target3` : Third target directory (CROPS_TARGET_2_ROOT), referenced as `$2` in target paths
-
-### Install & run with Docker compose
-
-Create the following `compose.yaml` file:
-
-```yaml
-services:
-  cronops:
-    image: ghcr.io/mtakla/cronops:latest
-    container_name: cronops
-    restart: unless-stopped
-    volumes:
-      - ~/:/io/source
-      - ~/:/io/target
-      - ./config:/config
-      - ./data:/data
-    environment:
-      TZ: Europe/Berlin
 ```
 
 In same directory, type `docker compose up -d` to install and start the cronops service. 
@@ -95,12 +64,52 @@ To check if the server is running:
 docker logs -f cronops
 ```
 
-Now you can add your job configuration files to the `./config/jobs` directory. Each YAML file in this directory can contain one or more job definitions. Details, see below. 
+If your container is running there is an **example job** active that is scheduled every 5 seconds and moves files from `./data/inbox` to `./data/outbox`. In addition, files in the outbox that are older than 30sec will be automatically cleaned up. 
+
+The corresponding job config can be found in `./config/jobs/example-job.yaml`:
+
+```
+action: move
+cron: "*/5 * * * * *"
+source:
+  dir: /inbox
+  includes:
+    - "**/**"
+  excludes:
+    - "**/.*"
+    - "**/*.log"
+target:
+  dir: /outbox
+  retention: "20s"
+```
+
+Now you can add more job configuration files to the `./config/jobs` 
 
 > [!NOTE]
 > You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
 
 To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
+
+
+### Install & run with Docker compose
+
+To install and run CronOps via docker compose, just create a `compose.yaml` file:
+
+```yaml
+services:
+  cronops:
+    image: ghcr.io/mtakla/cronops:latest
+    container_name: cronops
+    restart: unless-stopped
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      - ./data:/io/source
+      - ./data:/io/target
+    environment:
+      TZ: Europe/Berlin
+```
+
 
 #### Updating using Docker compose
 

@@ -1,6 +1,6 @@
 export class JobError extends Error {
    public readonly jobId: string;
-   constructor(message: string, jobId: string, cause?: Error) {
+   constructor(jobId: string, message: string, cause?: Error) {
       super(message, cause);
       this.jobId = jobId;
    }

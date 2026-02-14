@@ -11,8 +11,8 @@ export class FileDeleteHandler extends AbstractHandler implements ActionHandler 
     * Validate job against action handler requirements
     * @throws JobError
     */
-   override validateJob(job: Job) {
-      super.assertSourceDirExist(job);
+   override validateJob(_job: Job) {
+      //super.assertSourceDirExist(job);
    }
 
    override async processFiles(ctx: RunnerContext, entries: string[], fileHistory: FileHistory): Promise<void> {

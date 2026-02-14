@@ -1,16 +1,15 @@
-action: archive
-cron: "*/5 * * * *"
+# Example job that ...
+# - moves new files in '/inbox' to '/outbox' every 5 seconds
+# - cleanup moved files in '/outbox' that are older than 20 seconds
+action: move
+cron: "*/5 * * * * *"
 source:
-  dir: /
+  dir: /inbox
   includes:
-    - "**/*"
+    - "**/**"
   excludes:
-    - ".git/**"
-    - "node_modules/**"
-    - "dist/**"
-    - "build/**"
+    - "**/.*"
     - "**/*.log"
 target:
-  dir: /backup/cronops
-  archive_name: "backup-{{MM-dd}}.tgz"
-dry_run: true
+  dir: /outbox
+  retention: "20s"

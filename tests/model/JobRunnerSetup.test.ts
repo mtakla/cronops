@@ -16,6 +16,9 @@ const appDir = resolve(join(dirname(fileURLToPath(import.meta.url)), "..", "..")
 
 // avoid process.env side effects
 beforeEach(() => {
+   delete process.env.CROPS_CONFIG_DIR;
+   delete process.env.CROPS_SOURCE_ROOT;
+   delete process.env.CROPS_TARGET_ROOT;
    vi.unstubAllEnvs();
 });
 

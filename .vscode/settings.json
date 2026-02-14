@@ -31,7 +31,13 @@
    ],
    "remote.autoForwardPortsFallback": 0,
    "terminal.integrated.env.linux": {
+      "CROPS_CONFIG_DIR": "./config",
+      "CROPS_SOURCE_ROOT": "./build",
+      "CROPS_TARGET_ROOT": "./build",
       "CROPS_API_BASE_URL": "http://localhost:3000",
       "CROPS_API_KEY": "54bad6e77cf8cbc3c65ca76d127138d50e63adc29fb14450f1d60f2693b8676c"
+   },
+   "files.exclude": {
+      "**/dist": true
    },
 }

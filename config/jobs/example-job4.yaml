@@ -1,0 +1,17 @@
+action: archive
+cron: "*/5 * * * *"
+source:
+  dir: /
+  includes:
+    - "**/**"
+  excludes:
+    - ".git/**"
+    - "node_modules/**"
+    - "dist/**"
+    - "build/**"
+    - "**/*.log"
+target:
+  dir: /backup/cronops
+  archive_name: "backup-{{MM-dd}}.tgz"
+enabled: false
+dry_run: true
