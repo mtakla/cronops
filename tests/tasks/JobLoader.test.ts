@@ -16,7 +16,7 @@ describe(JobLoader.name, () => {
       const configDir = join(workDir, "defaults");
       const task = new JobLoader({ configDir });
       expect((await task.loadJobs()).length).toBeGreaterThan(0);
-      expect(await fsx.pathExists(join(configDir, "jobs", "example-job1.yaml"))).toBe(true);
+      expect(await fsx.pathExists(join(configDir, "jobs", "example-job.yaml"))).toBe(true);
    });
 
    it("loading test jobs should work", async () => {
