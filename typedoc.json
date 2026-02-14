@@ -8,11 +8,19 @@
         "./src/tasks/JobLoader.ts",
         "./src/tasks/JobRunner.ts"
     ],
+    "readme": "README.md",
+    "customCss": "./assets/typedoc.css",
+    "entryPointStrategy": "expand",
     "excludeExternals": true,
     "excludePrivate": true,
     "excludeProtected": true,
-    "out": "build/docs/typedoc",
+    "categorizeByGroup": true,
     "sort": [
         "alphabetical"
-    ]
+    ],
+    "navigationLinks": {
+        "GitHub": "https://github.com/mtakla/copypoc",
+        "NPM": "https://www.npmjs.com/package/@mtakla/cronops"
+    },
+    "out": "build/docs/typedoc",
 }

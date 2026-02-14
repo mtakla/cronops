@@ -1,0 +1,68 @@
+/* ===== CRONOPS DOCS CUSTOM STYLING ===== */
+
+:root {
+    --content-max-width: 12800px;
+    --sidebar-width: 280px;
+}
+
+/* Hauptcontainer breiter machen */
+.container {
+    max-width: var(--content-max-width) !important;
+}
+
+.container-main {
+    max-width: 100% !important;
+}
+
+/* Content-Bereich optimieren */
+.col-content {
+    max-width: calc(100% - var(--sidebar-width) - 40px) !important;
+    padding: 20px 40px;
+}
+
+/* Sidebar anpassen */
+.col-sidebar {
+    max-width: var(--sidebar-width) !important;
+    min-width: var(--sidebar-width) !important;
+}
+
+/* Code-Blöcke volle Breite nutzen */
+pre code {
+    display: block;
+    overflow-x: auto;
+}
+
+/* Tabellen responsive */
+table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
+}
+
+/* Bessere Lesbarkeit für lange Methodensignaturen */
+.tsd-signature {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .col-content {
+        max-width: 100% !important;
+        padding: 20px;
+    }
+}
+
+@media (min-width: 1920px) {
+    :root {
+        --content-max-width: 1800px;
+    }
+}
+
+/* Dark Mode Unterstützung */
+@media (prefers-color-scheme: dark) {
+    .container {
+        background-color: #1e1e1e;
+    }
+}
