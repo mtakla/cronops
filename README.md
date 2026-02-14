@@ -83,7 +83,7 @@ target:
   retention: "20s"
 ```
 
-Now you can add more job configuration files to the `./config/jobs` 
+Now you can add more job configuration files to `./config/jobs`. For detailes, see [job configuration] (#job-configuration) section below.
 
 > [!NOTE]
 > You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
@@ -227,7 +227,7 @@ The CronOps service can be configured with the following environment variables:
 
 ## Job Configuration
 
-Jobs are configured as YAML files in the `CROPS_CONFIG_DIR/jobs` directory. Each YAML file can contain one or more job definitions. .
+Jobs are configured as YAML files in the `CROPS_CONFIG_DIR/jobs` directory. Each YAML file defines one job.
 
 Example job config  `./config/jobs/example.yaml`
 
@@ -268,7 +268,6 @@ CronOps supports 5 different job actions:
 #### Command execution action
 
 - **`exec`** - Execute a command or script. Use with `command`, `args`, `shell`, and `env` properties
-
 
 > [!TIP]
 > **Path References**: Use `$1`, `$2`, or `$3` in job paths to reference configured root directories. 
