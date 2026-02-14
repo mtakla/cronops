@@ -11,7 +11,7 @@ export const openapi = {
       },
       license: {
          name: "ISC",
-         url: "https://github.com/mtakla/cronops/blob/master/LICENSE",
+         url: "https://github.com/mtakla/cronops/blob/main/LICENSE",
       },
    },
    components: {
