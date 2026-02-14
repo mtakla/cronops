@@ -29,8 +29,8 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.source3Root).toBe(appDir);
       expect(setup.target3Root).toBe(appDir);
       expect(setup.tempDir).toBe(join(os.tmpdir(), "cronops"));
-      expect(setup.configDir).toBe(join(appDir, "config"));
-      expect(setup.logDir).toBe(join(os.homedir(), ".cronops"));
+      expect(setup.configDir).toBe(join(os.homedir(), ".cronops", "config"));
+      expect(setup.logDir).toBe(join(os.homedir(), ".cronops", "logs"));
       expect(setup.shell).toBe(false);
    });
 

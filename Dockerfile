@@ -11,11 +11,12 @@ RUN npm ci
 COPY . .
 RUN npm run build
 RUN npm run test
+RUN npm run typedoc
 
 # -------------------------------
 # PRODUCTION STAGE
 # -------------------------------
-FROM node:24-alpine AS production
+FROM node:24-alpine AS app
 
 # useful alpine ops addons
 RUN apk add --no-cache \
@@ -98,3 +99,10 @@ HEALTHCHECK --interval=30s  \
 
 # define entry 
 CMD ["node", "./dist/server.js"]
+
+# -------------------------------
+# DOCUMENATION STAGE
+# -------------------------------
+FROM nginx:alpine AS docs
+# copy dist files from build stage
+COPY --from=builder /app/build/docs usr/share/nginx/html

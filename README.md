@@ -7,7 +7,7 @@
 **CronOps** is a lightweight, cron-based file management and system task scheduler for containerized environments. It automates copying, moving, archiving, and cleaning up files across mounted volumes — keeping your storage tidy, enabling seamless file exchange between containerized services, and triggering regular tasks in your development, integration or production environments.
 
 > [!WARNING]
-> Early BETA. Not recommended for use in a production environment!
+> This project is in early BETA. Production use is not yet recommened!
 
 ## 💡 Why CronOps?
 
@@ -49,8 +49,9 @@ CronOps is built and optimized to run as a Docker container itself:
 docker run \
   --name cronops \
   -v ./config:/config \
-  -v /home/docker/data:/io/source \
-  -v /home/docker/archive:/io/target \
+  -v ./data:/data \
+  -v ~:/io/source \
+  -v ~:/io/target \
   --restart unless-stopped \
   ghcr.io/mtakla/cronops:latest
 ```
@@ -78,52 +79,30 @@ services:
     container_name: cronops
     restart: unless-stopped
     volumes:
-      - /home/docker/data:/io/source
-      - /home/docker/archive:/io/target
+      - ~/:/io/source
+      - ~/:/io/target
       - ./config:/config
-      - ./temp:/data/temp
-      - ./logs:/data/logs
+      - ./data:/data
     environment:
-      CROPS_API_KEY: 54bad6e77cf8cbc3c65ca76d127138d50e63adc29fb14450f1d60f2693b8676c  # <-- change me!
-      TZ: Europe/UTC
+      TZ: Europe/Berlin
 ```
 
 In same directory, type `docker compose up -d` to install and start the cronops service. 
 
-To check if the server is running, just action:
+To check if the server is running:
 
 ```sh
 docker logs -f cronops
 ```
 
-After your first start you should see the following output:
-```text
-   ____                      ___              
-  / ___| _ __  ___   _ __   / _ \  _ __   ___ 
- | |    | '__|/ _ \ | '_ \ | | | || '_ \ / __|
- | |___ | |  | (_) || | | || |_| || |_) |\__ \
-  \____||_|   \___/ |_| |_| \___/ | .__/ |___/
-                                  |_|         
-
-☰ CronOps v0.1.1-rc2.4 »Omnia coniuncta sunt«
-Monitoring job configs in /config/workspace/cronops/config/jobs ...
-
-Web API enabled. HTTP Server is listening on port 8118 ...
- ⎆ API endpoint http://127.0.0.1:8118/api (secured)
- ⎆ OpenAPI docs http://127.0.0.1:8118/docs
- ⎆ Health check http://127.0.0.1:8118/health
-
-Job config loaded (1 active job)
- 🕔 [example-job3] scheduled (*/5 * * * *)
- ```
-
-Now you can add your job configuration files to the `./config/jobs/` directory. Each YAML file in this directory can contain one or more job definitions. Details, see below. 
+Now you can add your job configuration files to the `./config/jobs` directory. Each YAML file in this directory can contain one or more job definitions. Details, see below. 
 
 > [!NOTE]
 > You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
 
+To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
 
-### Updating using Docker compose
+#### Updating using Docker compose
 
 When using docker compose, to update to the latest version of CronOps, just type
 
@@ -131,38 +110,87 @@ When using docker compose, to update to the latest version of CronOps, just type
 docker compose pull && docker compose up -d
 ```
 
-in the same directoy where `compose.yaml` has been created. 
+in the same directory where `compose.yaml` has been created. 
 
 
+### Manual installation
 
-### Install & run in server environment
+This requires [Node.js](https://nodejs.org/) (>= v24) to be installed on your server. 
 
-This requires [node.js](https://nodejs.org/) (v24 ++) to be installed on your server. 
-
-First step is to create an empty app directory with a `.env` file that contains your configuration settings, e.g.:
+First step is to create an empty CronOps app directory with a `.env` file that contains your configuration settings, e.g.:
 
 ```ini
-NODE_ENV=production
-CROPS_SOURCE_ROOT=/var/lib/docker/volumes   # change as you like
-CROPS_TARGET_ROOT=/var/opt/backups          # change as you like
-CROPS_CONFIG_DIR=/home/cronops/config       # optional. Default is ./config
-CROPS_LOG_DIR=/home/cronops/logs            # optional. Default is ~/.cronops
+CROPS_SOURCE_ROOT=/home/joe                 # change as you like
+CROPS_TARGET_ROOT=/home/joe                 # change as you like
+CROPS_CONFIG_DIR=./config                   # Default is ~/.cronops/config
+CROPS_LOG_DIR=./logs                        # Default is ~/.cronops/logs
 ```
 
-To install and start CronOps, type in bash shell:
+To install & start CronOps, type:
 
 ```bash
-npx dotenvx run -- npx @mtakla/cronops &> /var/log/cronops.log
+npx @dotenvx/dotenvx run -- npx @mtakla/cronops
 ```
+
 This will ...
 
-- download the latest version of cronops (and dotenvx)
+- download the latest version of dotenvx & cronops 
 - load the environment settings defined in the `.env` file
 - start the cronops service with the loaded environment settings 
-- create jobs directory in `/home/cronops/config/jobs` if it doesn't exist
+- create config directory in `./config` if it doesn't exist
+- create logs directory in `./logs` if it doesn't exist
 - switch to idle mode as no active jobs are configured 
 
-You can add job configuration files to `/home/cronops/config/jobs/` directory. Each YAML file in this directory defines a job. The server will hot reload when job files are added, modified, or removed.
+You can now add job configuration files to `./config/jobs` directory. Each YAML file in this directory defines a job. The server will hot reload when job files are added, modified, or removed.
+
+### Use in your code
+
+Install CronOps in your code using npm
+
+```
+npm install @mtakla/cronops --save
+```
+
+To create a job runner:
+
+```javascript
+import { createJobRunner } from "@mtakla/cronops";
+
+// create runner options
+const runnerOptions =  { configDir: "./config" };
+
+// create a job runner instance 
+const runner = createJobRunner({
+  action: "copy",
+  cron: "*/5 * * * * *",
+  source: {
+    dir: "download/",
+  },
+  target: {
+    dir: "backup/downloads",
+    retention: "30d"
+  }
+}, runnerOptions);
+
+runner.onScheduled(() => {
+  console.log("job scheduled!");
+});
+
+runner.onStarted(() => {
+  console.log("job started!");
+});
+
+runner.onFinished(() => {
+  console.log("job finished!");
+});
+
+runner.onError(() => {
+  console.log("job finished!");
+});
+
+// finally schedule job
+runner.schedule();
+```
 
 
 ## Configuration 

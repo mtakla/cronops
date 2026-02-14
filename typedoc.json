@@ -9,7 +9,7 @@
     "excludeExternals": true,
     "excludePrivate": true,
     "excludeProtected": true,
-    "out": "build/docs",
+    "out": "build/docs/typedoc",
     "sort": [
         "alphabetical"
     ]

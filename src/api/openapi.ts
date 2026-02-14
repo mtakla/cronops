@@ -1,5 +1,3 @@
-import { number } from "zod";
-
 export const openapi = {
    openapi: "3.0.3",
    info: { title: "CronOps Web API", version: "1.0.0" },
@@ -193,7 +191,7 @@ export const openapi = {
                            type: "object",
                            properties: {
                               paused: { type: "boolean", example: true },
-                              jobs: { type: number, example: 4 },
+                              jobs: { type: "number", example: 4 },
                            },
                         },
                      },
@@ -215,7 +213,7 @@ export const openapi = {
                            type: "object",
                            properties: {
                               resumed: { type: "boolean", example: true },
-                              jobs: { type: number, example: 4 },
+                              jobs: { type: "number", example: 4 },
                            },
                         },
                      },

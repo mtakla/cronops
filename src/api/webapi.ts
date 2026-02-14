@@ -69,22 +69,20 @@ app.post("/terminate", async () => {
 
 export default function (scheduler: JobScheduler) {
    if (!apiKey || !/^[0-9a-f]{64}$/i.test(apiKey)) {
-      console.log(chalk.red(`Web API disabled. No valid API key configured!`));
-      console.log(`\nTo use the CronOps admin Web API:`);
+      console.log(`\nNo API key found. To use the CronOps admin Web API:`);
       console.log(` - Generate a hex‑encoded 256‑bit secret (e.g. 'openssl rand -hex 32')`);
-      console.log(` - Configure api-key via environment variable CROPS_API_KEY`);
+      console.log(` - Configure CronOps API key via environment variable CROPS_API_KEY`);
       console.log(` - Add 'HTTP Bearer' header on each /api HTTP request`);
-   } else {
-      app.decorate("scheduler", scheduler);
-      app.listen({ port, host }, (err) => {
-         if (err) {
-            console.log(chalk.red(`Web API disabled. ${err?.message}`));
-         } else {
-            console.log(`\nWeb API enabled. HTTP Server is listening on port ${port} ...`);
-            console.log(` ⎆ API endpoint ${baseUrl}/api (secured)`);
-            console.log(` ⎆ OpenAPI docs ${baseUrl}/docs`);
-            console.log(` ⎆ Health check ${baseUrl}/health`);
-         }
-      });
    }
+   app.decorate("scheduler", scheduler);
+   app.listen({ port, host }, (err) => {
+      if (err) {
+         console.log(chalk.red(`Web API disabled. ${err?.message}`));
+      } else {
+         console.log(`\nWeb API enabled. HTTP Server is listening on port ${port} ...`);
+         console.log(` ⎆ API endpoint ${baseUrl}/api (secured)`);
+         console.log(` ⎆ OpenAPI docs ${baseUrl}/docs`);
+         console.log(` ⎆ Health check ${baseUrl}/health`);
+      }
+   });
 }

@@ -6,7 +6,7 @@
    "author": "nevereven",
    "license": "ISC",
    "bin": {
-      "cronops": "./dist/server.js"
+      "cronops": "dist/server.js"
    },
    "main": "./dist/server.js",
    "types": "./dist/index.d.ts",
@@ -68,14 +68,13 @@
       "check": "biome check",
       "check:fix": "biome check --write",
       "test": "vitest run",
-      "docs": "typedoc",
+      "typedoc": "typedoc",
       "coverage": "vitest run --coverage",
       "loadtest": "tsc && node ./dist/tests/loadtest.js",
       "clean": "rm -rf dist",
       "build": "tsc",
       "dev": "tsc && node ./dist/server.js",
-      "start": "node ./dist/server.js",
-      "docker:build": "docker build -t ghcr.io/mtakla/cronops:latest -t ghcr.io/mtakla/cronops:0.1 .",
-      "docker:push":  "docker push ghcr.io/mtakla/cronops:latest"
+      "docker:build": "docker build --load --target app -t ghcr.io/mtakla/cronops:latest .",
+      "docker:build-docs": "docker build --load --target docs -t ghcr.io/mtakla/cronops-docs:latest ."
    }
 }

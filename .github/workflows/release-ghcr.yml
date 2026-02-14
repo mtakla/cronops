@@ -1,38 +1,48 @@
 name: Release to ghcr.io
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Image tag (e.g. 0.1.0)"
-        required: true
-        default: "0.1"
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build & push cronops image
         uses: docker/build-push-action@v5
         with:
           push: true
+          target: app
+          platforms: linux/amd64,linux/arm64
           tags: |
             ghcr.io/${{ github.repository_owner }}/cronops:latest
-            ghcr.io/${{ github.repository_owner }}/cronops:${{ inputs.version }}
+            ghcr.io/${{ github.repository_owner }}/cronops:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push cronops-docs image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          target: docs
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/cronops-docs:latest
+            ghcr.io/${{ github.repository_owner }}/cronops-docs:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
