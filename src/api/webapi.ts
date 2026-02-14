@@ -30,10 +30,27 @@ app.addHook("preHandler", async (request, reply) => {
 app.get("/docs", async (_, reply) => {
    reply.type("text/html").send(`
       <!doctype html>
-      <html>
+      <html lang="en">
          <head>
             <meta charset="utf-8" />
-            <title>CronOps API</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <meta name="description" content="CronOps API documentation - Lightweight, cron-based file management and system task scheduler for containerized environments. Automate copying, moving, archiving, and cleaning up files." />
+            <meta name="keywords" content="cronops, cron, scheduler, file management, docker, containerization, automation, API, REST API" />
+            <meta name="author" content="nevereven" />
+            <meta name="theme-color" content="#1976d2" />
+            
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website" />
+            <meta property="og:title" content="CronOps API Documentation" />
+            <meta property="og:description" content="Interactive API documentation for CronOps - Cron-based file management and system task scheduler for containerized environments." />
+            <meta property="og:site_name" content="CronOps" />
+            
+            <!-- Twitter Card -->
+            <meta name="twitter:card" content="summary" />
+            <meta name="twitter:title" content="CronOps API Documentation" />
+            <meta name="twitter:description" content="Interactive API documentation for CronOps - Cron-based file management and system task scheduler for containerized environments." />
+            
+            <title>CronOps API Documentation</title>
             <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
          </head>
          <body>

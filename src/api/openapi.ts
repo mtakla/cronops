@@ -1,6 +1,19 @@
 export const openapi = {
    openapi: "3.0.3",
-   info: { title: "CronOps Web API", version: "1.0.0" },
+   info: {
+      title: "CronOps Web API",
+      version: "1.0.0",
+      description:
+         "REST API for CronOps - A lightweight, cron-based file management and system task scheduler for containerized environments. Automate file operations, execute commands, and manage scheduled jobs.",
+      contact: {
+         name: "CronOps",
+         url: "https://github.com/mtakla/cronops",
+      },
+      license: {
+         name: "ISC",
+         url: "https://github.com/mtakla/cronops/blob/master/LICENSE",
+      },
+   },
    components: {
       securitySchemes: {
          ApiKeyBearer: {
@@ -13,23 +26,15 @@ export const openapi = {
    tags: [
       {
          name: "public",
-         description: "Public api",
+         description: "Public endpoints - Health check and API documentation",
       },
       {
          name: "jobs",
-         description: "CronOps job related tasks",
+         description: "Job management - Trigger, pause, and resume CronOps scheduled jobs",
       },
       {
          name: "admin",
-         description: "CronOps admin tasks",
-      },
-      {
-         name: "user",
-         description: "Operations about user",
-         externalDocs: {
-            description: "Find out more about our store",
-            url: "http://swagger.io",
-         },
+         description: "Administration endpoints - Manage CronOps service configuration and operations",
       },
    ],
    paths: {
