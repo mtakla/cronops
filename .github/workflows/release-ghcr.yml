@@ -6,7 +6,11 @@ on:
       - "v*.*.*"
 
 jobs:
+  check-code:
+    uses: ./.github/workflows/check.yml
+
   build-and-push:
+    needs: check-code
     runs-on: ubuntu-latest
 
     permissions:

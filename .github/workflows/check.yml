@@ -1,0 +1,24 @@
+name: Check code and run tests
+
+on:
+  workflow_call:
+
+jobs:
+  test-in-docker:
+    runs-on: ubuntu-latest
+
+    container:
+      image: node:24-alpine
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Install modules
+        run: npm ci
+
+      - name: Check code
+        run: npm run check
+
+      - name: Run Tests
+        run: npm run test

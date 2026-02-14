@@ -5,22 +5,5 @@ on:
     branches: [main]
 
 jobs:
-  test-in-docker:
-    runs-on: ubuntu-latest
-
-    container:
-      image: node:24-alpine
-
-    steps:
-      # Checkout to /__w/REPO/REPO
-      - name: Code checkout
-        uses: actions/checkout@v4
-
-      - name: Install modules
-        run: npm ci
-
-      - name: Check code
-        run: npm run check
-
-      - name: Run Tests
-        run: npm run test
+  check-code:
+    uses: ./.github/workflows/check.yml
