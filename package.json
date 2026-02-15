@@ -1,17 +1,30 @@
 {
    "name": "@mtakla/cronops",
    "version": "0.1.1-rc4",
-   "description": "Cron-based cross-container server lifecycle management",
+   "description": "Automated cross-container file lifecycle management with cron scheduling",
    "type": "module",
-   "author": "nevereven",
+   "author": "mtakla@nevereven",
    "license": "ISC",
+   "funding": {
+      "type": "buymeacoffee",
+      "url": "https://www.buymeacoffee.com/nevereven"
+   },
+   "homepage": "https://github.com/mtakla/cronops#readme",
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/mtakla/cronops.git"
+   },
+   "bugs": {
+      "url": "https://github.com/mtakla/cronops/issues"
+   },
    "bin": {
-      "cronops": "dist/server.js"
+      "cronops": "./dist/server.js"
    },
    "main": "./dist/server.js",
    "types": "./dist/index.d.ts",
    "engines": {
-      "node": ">=24"
+      "node": ">=24.0.0",
+      "npm": ">=10.0.0"
    },
    "keywords": [
       "cron",
@@ -26,7 +39,7 @@
       "lifecycle",
       "cross-container"
    ],
-   "export": {
+   "exports": {
       ".": {
          "types": "./dist/index.d.ts",
          "import": "./dist/index.js"
@@ -42,15 +55,15 @@
       "chalk": "5.6.2",
       "date-fns": "4.1.0",
       "fast-glob": "3.3.3",
+      "fastify": "5.7.4",
       "figlet": "1.10.0",
       "fs-extra": "11.3.3",
-      "p-limit": "7.3.0",
       "node-cron": "4.2.1",
+      "p-limit": "7.3.0",
       "parse-duration": "2.1.5",
       "tar-fs": "3.1.1",
       "yaml": "2.8.2",
-      "zod": "4.3.6",
-      "fastify": "5.7.4"
+      "zod": "4.3.6"
    },
    "devDependencies": {
       "@biomejs/biome": "^2.3.6",
@@ -59,9 +72,8 @@
       "@types/shell-quote": "^1.7.5",
       "@types/tar-fs": "2.0.4",
       "@vitest/coverage-v8": "^4.0.14",
-      "typescript": "^5.9.3",
       "typedoc": "^0.28.16",
-      "tsx": "^4.21.0",
+      "typescript": "^5.9.3",
       "vitest": "^4.0.14"
    },
    "scripts": {
@@ -72,9 +84,11 @@
       "coverage": "vitest run --coverage",
       "loadtest": "tsc && node ./dist/tests/loadtest.js",
       "clean": "rm -rf dist",
-      "build": "tsc",
       "dev": "tsc && node ./dist/server.js",
+      "build": "tsc",
+      "build:types": "tsc --declaration",
       "docker:build": "docker build --load --target app -t ghcr.io/mtakla/cronops:latest .",
-      "docker:build-docs": "docker build --load --target docs -t ghcr.io/mtakla/cronops-docs:latest ."
+      "docker:build-docs": "docker build --load --target docs -t ghcr.io/mtakla/cronops-docs:latest .",
+      "prepublishOnly": "npm run build && npm test"
    }
 }

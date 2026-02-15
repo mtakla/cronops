@@ -1,8 +1,8 @@
 /* ===== CRONOPS DOCS CUSTOM STYLING ===== */
 
 :root {
-    --content-max-width: 12800px;
-    --sidebar-width: 280px;
+    --content-max-width: 1400px;
+    --sidebar-width: 260px;
 }
 
 /* Hauptcontainer breiter machen */
@@ -16,8 +16,8 @@
 
 /* Content-Bereich optimieren */
 .col-content {
-    max-width: calc(100% - var(--sidebar-width) - 40px) !important;
-    padding: 20px 40px;
+    max-width: calc(100% - var(--sidebar-width) - 32px) !important;
+    padding: 16px 32px;
 }
 
 /* Sidebar anpassen */
@@ -56,7 +56,7 @@ table {
 
 @media (min-width: 1920px) {
     :root {
-        --content-max-width: 1800px;
+        --content-max-width: 1600px;
     }
 }
 
