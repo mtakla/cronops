@@ -88,6 +88,6 @@
       "build": "tsc",
       "build:types": "tsc --declaration",
       "docker:build": "docker build --load --target app -t ghcr.io/mtakla/cronops:latest .",
-      "docker:build-docs": "docker build --load --target docs -t ghcr.io/mtakla/cronops-docs:latest .",
+      "docker:build-docs": "docker build --load --target docs -t ghcr.io/mtakla/cronops-docs:latest ."
    }
 }
