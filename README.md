@@ -43,7 +43,7 @@ All configured via simple, version-controllable ***.yml** based **job definition
 
 ### Install & run with Docker
 
-CronOps is built and optimized to run as a Docker container itself. By default the cronops contain 
+CronOps is built and optimized to run as a Docker container itself. 
 
 ```sh
 docker run \
@@ -80,15 +80,10 @@ target:
   retention: "20s"
 ```
 
-In same directory, type `docker compose up -d` to install and start the cronops service. 
-
-Now you can add more job configuration files to `./config/jobs`. For detailes, see [job configuration] (#job-configuration) section below.
+Now you can add more job configuration files to `./config/jobs`. For detailes, see [job configuration](#job-configuration) section below.
 
 > [!NOTE]
 > You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
-
-To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
-
 
 ### Using Docker Compose
 
@@ -111,6 +106,8 @@ services:
       TZ: Europe/Berlin
 ```
 
+In same directory, type `docker compose up -d` to install and start the cronops service. 
+
 **Updating CronOps with Docker Compose**
 
 When using docker compose, to update to the latest version of CronOps, just type
@@ -120,6 +117,10 @@ docker compose pull && docker compose up -d
 ```
 
 in the same directory where `compose.yaml` has been created. 
+
+### Enable admin Web-API
+
+To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
 
 
 ### Manual installation
@@ -205,23 +206,23 @@ runner.schedule();
 
 The CronOps service can be configured with the following environment variables:
 
-| ENV                   | Description                                                                    | Docker defaults |
-| --------------------- | ------------------------------------------------------------------------------ | --------------- |
-| `CROPS_SOURCE_ROOT`   | Path to primary source directory                                               | `/io/source`    |
-| `CROPS_TARGET_ROOT`   | Path to primary target directory                                               | `/io/target`    |
-| `CROPS_SOURCE_2_ROOT` | Path to secondary source directory                                             | `/io/source2`   |
-| `CROPS_TARGET_2_ROOT` | Path to secondary target directory                                             | `/io/target2`   |
-| `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory                                              | `/io/source3`   |
-| `CROPS_TARGET_3_ROOT` | Path to tertiary target directory                                              | `/io/target3`   |
-| `CROPS_CONFIG_DIR`    | Path to the config directory where job files are located                       | `/config`       |
-| `CROPS_TEMP_DIR`      | Path to temporary folder used for dry-run mode                                 | `/data/temp`    |
-| `CROPS_LOG_DIR`       | Path to directory where job logs and file history are stored                   | `/data/logs`    |
-| `CROPS_HOST`          | Host address for the Admin API server                                          | `0.0.0.0`       |
-| `CROPS_PORT`          | Port for the Admin API server                                                  | `8083`          |
-| `CROPS_EXEC_SHELL`    | (*Optional*) Default shell for `exec` actions. Can be `false`, `true`, or path | `false`         |
-| `CROPS_API_KEY`       | (*Optional*) API key for securing the Admin API endpoints                      | -               |
-| `CROPS_BASE_URL`      | (*Optional*) Base URL for admin API and OpenAPI docs                           | -               |
-| `TZ`                  | (*Optional*) Timezone for cron scheduling (standard timezone format)           | `UTC`           |
+| ENV                   | Description                                                                                                            | Docker defaults |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `CROPS_SOURCE_ROOT`   | Path to primary source directory                                                                                       | `/io/source`    |
+| `CROPS_TARGET_ROOT`   | Path to primary target directory                                                                                       | `/io/target`    |
+| `CROPS_SOURCE_2_ROOT` | Path to secondary source directory                                                                                     | `/io/source2`   |
+| `CROPS_TARGET_2_ROOT` | Path to secondary target directory                                                                                     | `/io/target2`   |
+| `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory                                                                                      | `/io/source3`   |
+| `CROPS_TARGET_3_ROOT` | Path to tertiary target directory                                                                                      | `/io/target3`   |
+| `CROPS_CONFIG_DIR`    | Path to the config directory where job files are located                                                               | `/config`       |
+| `CROPS_TEMP_DIR`      | Path to temporary folder used for dry-run mode                                                                         | `/data/temp`    |
+| `CROPS_LOG_DIR`       | Path to directory where job logs and file history are stored                                                           | `/data/logs`    |
+| `CROPS_HOST`          | Host address for the Admin API server                                                                                  | `0.0.0.0`       |
+| `CROPS_PORT`          | Port for the Admin API server                                                                                          | `8083`          |
+| `CROPS_EXEC_SHELL`    | (*Optional*) Default shell for `exec` actions. Can be `false`, `true`, or path                                         | `false`         |
+| `CROPS_API_KEY`       | (*Optional*) API key to secure admin API endpoints. Must be a hex‑encoded 256‑bit secret (e.g. 'openssl rand -hex 32') | -               |
+| `CROPS_BASE_URL`      | (*Optional*) Base URL for admin API and OpenAPI docs                                                                   | -               |
+| `TZ`                  | (*Optional*) Timezone for cron scheduling (standard timezone format)                                                   | `UTC`           |
 
 
 ## Job Configuration
@@ -240,7 +241,6 @@ source:
 target:
   dir: $1/filegator/micha/downloads
   permissions:
-    owner: "1000:1000"
     file_mode: "444"
     dir_mode: "711"
   retention: 12h
@@ -251,7 +251,6 @@ enabled: false
 > [!NOTE]
 You can change the job configuration at any time and the server will hot reload and schedule the new job configuration.  
 Be aware that once the job config has been changed, active running tasks will be terminated and the job will be rescheduled
-
 
 ### Job Actions
 
@@ -290,11 +289,9 @@ source:
 target:
   dir: $1/archive/documents
   permissions:
-    owner: "1000:1000"
     file_mode: "644"
     dir_mode: "755"
   retention: "30d"
-enabled: true
 ```
 
 #### Create an archive 
@@ -312,7 +309,6 @@ source:
 target:
   dir: $1/backups
   archive_name: "logs-{{yyyy-MM-dd}}.tgz"
-enabled: true
 ```
 
 #### Execute Custom Command
@@ -327,7 +323,6 @@ args:
 env:
   LOG_LEVEL: "info"
   API_TOKEN: "secret123"
-enabled: true
 ```
 
 ### Command execution parameters
@@ -413,12 +408,16 @@ If the exec action is configured to run on selected `source` files:
 > It is strongly advised against accessing or modifying the data directly on the host system within Docker's internal volume storage path (typically `/var/lib/docker/volumes/`). 
 
 > [!WARNING]
-> **Hazardous Misconfiguration** 
+> **Hazardous Misconfiguration**
 > 
-> If your CronOps docker container is running with Root Privileges and the persistent volumes (source/target directories) are mounted to critical system directories of the hosting operating system (e.g., `/etc`, `/var`, etc.), this creates an extremely high **security risk**: 
+> By default, CronOps runs as user/group **1000:1000** to follow a security‑first principle.  
+> You *can* run it as root by setting `PUID=0` and `PGID=0`, but **this is dangerous**.
 > 
-> - **System File Overwrite**: The container can access, modify, or delete crucial files and directories on the host machine via the exposed volume paths.
-> - **Host System Damage**: If the volume mounts are not correctly configured (e.g., if a Bind Mount unintentionally exposes the wrong host directory), the root user inside the container can potentially modify or delete system-critical data on the host.
+> When running as root, bind‑mounted host volumes (source/target directories) may map to critical system paths on the host (e.g. `/etc`, `/var`).  
+> This creates a **high‑risk security scenario**:
+> 
+> - **System file overwrite**: the container can read, modify, or delete critical host files via mounted paths.
+> - **Host damage through misconfigured mounts**: a wrong bind mount can expose system directories, allowing root inside the container to corrupt or erase host data.
 
 
 ## License
