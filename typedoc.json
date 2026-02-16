@@ -1,24 +1,27 @@
 {
-   "$schema": "https://typedoc.org/schema.json",
-   "entryPoints": [
-      "./src/index.ts",
-      "./src/types/Config.types.ts",
-      "./src/types/Options.types.ts",
-      "./src/tasks/JobScheduler.ts",
-      "./src/tasks/JobLoader.ts",
-      "./src/tasks/JobRunner.ts"
-   ],
-   "readme": "README.md",
-   "customCss": "./assets/typedoc.css",
-   "entryPointStrategy": "expand",
-   "excludeExternals": true,
-   "excludePrivate": true,
-   "excludeProtected": true,
-   "categorizeByGroup": true,
-   "sort": ["alphabetical"],
-   "navigationLinks": {
-      "GitHub": "https://github.com/mtakla/copypoc",
-      "NPM": "https://www.npmjs.com/package/@mtakla/cronops"
-   },
-   "out": "build/docs"
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "./src/index.ts",
+        "./src/types/Config.types.ts",
+        "./src/types/Options.types.ts",
+        "./src/tasks/JobScheduler.ts",
+        "./src/tasks/JobLoader.ts",
+        "./src/tasks/JobRunner.ts"
+    ],
+    "basePath": "./src",
+    "readme": "README.md",
+    "customCss": "./assets/typedoc.css",
+    "entryPointStrategy": "expand",
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "categorizeByGroup": true,
+    "sort": [
+        "alphabetical"
+    ],
+    "navigationLinks": {
+        "GitHub": "https://github.com/mtakla/copypoc",
+        "NPM": "https://www.npmjs.com/package/@mtakla/cronops"
+    },
+    "out": "build/docs"
 }

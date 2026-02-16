@@ -212,8 +212,9 @@ export abstract class AbstractHandler implements ActionHandler {
    }
 
    private async setTargetFilePermissions(destPath: string, perms: PermissionModel, isDir = false) {
+      const mode = isDir ? perms.dirMode : perms.fileMode;
       if (perms.uid >= 0 && perms.gid >= 0) await fsx.chown(destPath, perms.uid, perms.gid);
-      await fsx.chmod(destPath, isDir ? perms.dirMode : perms.fileMode);
+      if (mode >= 0) await fsx.chmod(destPath, mode);
    }
 
    private getFolderPermissionPromises(ctx: RunnerContext, dirPath: string, folderPromises: PromiseMap): void {

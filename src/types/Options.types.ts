@@ -57,6 +57,16 @@ export type RunnerOptions = {
     * shell like `/bin/sh` or `/bin/bash`. Default is `false`
     */
    shell?: string | boolean;
+
+   /**
+    * Default user used to create files and dirs. no default
+    */
+   uid?: string;
+
+   /**
+    * Default user used to create files and dirs
+    */
+   gid?: string;
 };
 
 export type LoaderOptions = {
@@ -84,5 +94,7 @@ export const ENV = {
    BASE_URL: "CROPS_BASE_URL",
    HOST: "CROPS_HOST",
    PORT: "CROPS_PORT",
-   TZ: "TZ",
+   PUID: "PUID",
+   PGID: "PGID",
+   TZ: "TG",
 } as const;

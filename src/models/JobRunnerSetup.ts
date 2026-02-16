@@ -18,6 +18,8 @@ export class JobRunnerSetup implements RunnerOptions {
    public readonly target2Root: string;
    public readonly source3Root: string;
    public readonly target3Root: string;
+   public readonly uid: string;
+   public readonly gid: string;
    public readonly shell: string | boolean;
    public readonly configDir: string;
    public readonly tempDir: string;
@@ -41,6 +43,8 @@ export class JobRunnerSetup implements RunnerOptions {
       this.configDir = resolve(options.configDir ?? process.env[ENV.CONFIG_DIR] ?? join(os.homedir(), ".cronops", "config"));
       this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? join(os.homedir(), ".cronops", "logs"));
       this.tempDir = resolve(options.tempDir ?? process.env[ENV.TEMP_DIR] ?? join(os.tmpdir(), "cronops"));
+      this.uid = options.uid ?? process.env[ENV.PUID] ?? `${process.getuid?.() ?? "0"}`;
+      this.gid = options.gid ?? process.env[ENV.PGID] ?? `${process.getgid?.() ?? "0"}`;
       this.shell = options.shell ?? parseShellSettings(process.env[ENV.EXEC_SHELL]) ?? false;
       this.scriptDir = join(this.configDir, "scripts");
 

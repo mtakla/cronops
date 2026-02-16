@@ -1,11 +1,11 @@
+import { join } from "node:path";
+import { fsyncSync, writeSync } from "node:fs";
+import { EventEmitter } from "node:events";
+import { JobRunnerResult } from "./JobRunnerResult.js";
 import type { RunnerContext, RunnerResult } from "../types/Task.types.js";
 import type { JobModel } from "./JobModel.js";
-import { EventEmitter } from "node:events";
-import { PermissionModel } from "./PermissionModel.js";
-import { JobRunnerResult } from "./JobRunnerResult.js";
-import { fsyncSync, writeSync } from "node:fs";
+import type { PermissionModel } from "./PermissionModel.js";
 import type { JobRunnerSetup } from "./JobRunnerSetup.js";
-import { join } from "node:path";
 
 export class JobRunnerContext implements RunnerContext {
    public readonly job: JobModel;
@@ -26,7 +26,7 @@ export class JobRunnerContext implements RunnerContext {
       this.targetDir = job.dry_run ? join(setup.tempDir, job.id) : setup.resolveTargetDir(job.target?.dir);
       this.sourceDirs = new Set<string>();
       this.targetDirs = new Set<string>();
-      this.targetPermissions = new PermissionModel(job.targetPermissions);
+      this.targetPermissions = job.getTargetPermissions();
       this.result = new JobRunnerResult();
       this.events = events;
       this.logFd = logFd;

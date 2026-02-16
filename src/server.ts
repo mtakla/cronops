@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import os from "node:os";
 import chalk from "chalk";
 import fsx from "fs-extra";
 import figlet from "figlet";
@@ -13,6 +14,7 @@ import type { RunnerResult } from "./types/Task.types.js";
 // helper
 const plural = (n: number, noun: string) => `${n > 0 ? n : "no"} ${noun}${n !== 1 ? "s" : ""}`;
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+const userInfo = os.userInfo();
 
 /**
  * Entry point to start server
@@ -29,7 +31,11 @@ export async function start() {
       // log welcome message
       console.log(figlet.textSync("CronOps", { horizontalLayout: "fitted" }));
       console.log(chalk.cyan.bold(`\n☰ CronOps v${packageJSON.version}`) + chalk.cyan.italic(` »Omnia coniuncta sunt«`));
-      console.log(`Monitoring job configs in ${join(jobLoader.configDir, "jobs")} ...`);
+
+      // log important status logs
+      console.log(`Server is running with user '${userInfo.username}' (${userInfo.uid ?? 0}:${userInfo.gid ?? 0})`);
+      console.log(`Job configurations are located in ${join(jobLoader.configDir, "jobs")}`);
+      if (userInfo.uid === 0) console.log(chalk.yellow(`\nWARNING! Server is running with ROOT privileges! You better know what you're doing.`));
 
       // remove temp dir (dry_run artifacts from previous runs)
       await fsx.emptyDir(jobScheduler.tempDir);

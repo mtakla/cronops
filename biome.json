@@ -6,7 +6,7 @@
       "clientKind": "git"
    },
    "files": {
-      "includes": ["src/**/*.ts", "tests/**/*.test.ts", "config/*.*", "./*.json"],
+      "includes": ["src/**/*.ts", "tests/**/*.test.ts", "config/*.*"],
       "ignoreUnknown": false
    },
    "formatter": {

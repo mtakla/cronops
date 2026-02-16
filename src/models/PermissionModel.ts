@@ -1,13 +1,17 @@
 export class PermissionModel {
-   public uid: number;
-   public gid: number;
+   public uid: number; // NaN if not set!
+   public gid: number; // NaN if not set!
    public fileMode: number;
    public dirMode: number;
-   constructor(attr: string) {
-      const [uidStr, gidStr, fileModeStr, dirModeStr] = attr.split(":");
+   constructor(ownerStr: string = ":", fileModeStr?: string, dirModeStr?: string) {
+      const [uidStr, gidStr] = ownerStr.split(":");
       this.uid = parseInt(uidStr || "", 10);
       this.gid = parseInt(gidStr || "", 10);
-      this.fileMode = parseInt(fileModeStr || "660", 8);
-      this.dirMode = parseInt(dirModeStr || "770", 8);
+      this.fileMode = parseInt(fileModeStr || "", 8);
+      this.dirMode = parseInt(dirModeStr || "", 8);
+   }
+
+   public hasChanges(): boolean {
+      return [this.uid, this.gid, this.fileMode, this.dirMode].some((v) => !Number.isNaN(v));
    }
 }

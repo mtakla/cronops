@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import type { Job, JobAction, JobSource, JobTarget } from "../types/Config.types.js";
+import { PermissionModel } from "./PermissionModel.js";
 
 export class JobModel {
    public id!: string;
@@ -42,18 +43,12 @@ export class JobModel {
    }
 
    /**
-    * Format is `'uid:gid:file_mode:dir_mode'`, where each part can be omitted.
-    * - `uid` ownership user id
-    * - `gid` ownership group id
-    * - `file_mode` file mode used in fs.chmod()
-    * - `dir_mode`dir mode of parent dir.
-    *
-    * Examples: `::660:770`, `1000:1000::`, `0:0:660:770`
-    * @returns attribute string
+    * Gets target permissions as PermissionModel instance
+    * @returns
     */
-   get targetPermissions(): string {
+   getTargetPermissions(): PermissionModel {
       const perm = this.target?.permissions;
-      return `${perm?.owner ?? ":"}:${perm?.file_mode ?? ""}:${perm?.dir_mode ?? ""}`;
+      return perm ? new PermissionModel(perm.owner, perm.file_mode, perm.dir_mode) : new PermissionModel();
    }
 
    private resolveDatePattern(input: string, date = new Date()): string {

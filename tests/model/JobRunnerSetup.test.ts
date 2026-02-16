@@ -10,16 +10,20 @@ import { FileCopyHandler } from "../../src/handlers/FileCopyHandler";
 import { FileMoveHandler } from "../../src/handlers/FileMoveHandler";
 import { FileDeleteHandler } from "../../src/handlers/FileDeleteHandler";
 import { FileArchiveHandler } from "../../src/handlers/FileArchiveHandler";
+import { afterEach } from "node:test";
 
 // For testing purpose only
 const appDir = resolve(join(dirname(fileURLToPath(import.meta.url)), "..", ".."));
+const origEnv = { ...process.env };
 
 // avoid process.env side effects
 beforeEach(() => {
-   delete process.env.CROPS_CONFIG_DIR;
-   delete process.env.CROPS_SOURCE_ROOT;
-   delete process.env.CROPS_TARGET_ROOT;
+   process.env = {};
    vi.unstubAllEnvs();
+});
+
+afterEach(() => {
+   process.env = { ...origEnv };
 });
 
 describe(JobRunnerSetup.name, () => {
@@ -35,6 +39,8 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.configDir).toBe(join(os.homedir(), ".cronops", "config"));
       expect(setup.logDir).toBe(join(os.homedir(), ".cronops", "logs"));
       expect(setup.shell).toBe(false);
+      expect(setup.uid).toBe(process.getuid ? `${process.getuid?.()}` : "0");
+      expect(setup.gid).toBe(process.getgid ? `${process.getgid?.()}` : "0");
    });
 
    it("initialization with env variables should work", () => {
@@ -47,6 +53,8 @@ describe(JobRunnerSetup.name, () => {
       vi.stubEnv(ENV.EXEC_SHELL, "/bin/bash");
       vi.stubEnv(ENV.TEMP_DIR, "/temp");
       vi.stubEnv(ENV.LOG_DIR, "/var/log/cronops");
+      vi.stubEnv(ENV.PUID, "1000");
+      vi.stubEnv(ENV.PGID, "100");
       vi.stubEnv(ENV.TZ, "Europe/Berlin");
       const setup = new JobRunnerSetup();
       expect(setup.sourceRoot).toBe("/foo/source");
@@ -58,6 +66,8 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.shell).toBe("/bin/bash");
       expect(setup.tempDir).toBe("/temp");
       expect(setup.logDir).toBe("/var/log/cronops");
+      expect(setup.uid).toBe("1000");
+      expect(setup.gid).toBe("100");
    });
 
    it("initialization with options should work", () => {
@@ -71,6 +81,8 @@ describe(JobRunnerSetup.name, () => {
          tempDir: "/temp/myapp",
          logDir: "/var/log/cronops",
          shell: "cmd.exe",
+         uid: "1000",
+         gid: "100",
       });
       expect(setup.sourceRoot).toBe("/foo/source");
       expect(setup.targetRoot).toBe(join(appDir, "/foo/target"));
@@ -81,6 +93,8 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.shell).toBe("cmd.exe");
       expect(setup.tempDir).toBe("/temp/myapp");
       expect(setup.logDir).toBe("/var/log/cronops");
+      expect(setup.uid).toBe("1000");
+      expect(setup.gid).toBe("100");
    });
 
    it("resolveSourceDir() should return correct values", () => {

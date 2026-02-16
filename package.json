@@ -80,14 +80,14 @@
       "check": "biome check",
       "check:fix": "biome check --write",
       "test": "vitest run",
-      "typedoc": "typedoc",
+      "docs": "typedoc",
       "coverage": "vitest run --coverage",
       "loadtest": "tsc && node ./dist/tests/loadtest.js",
       "clean": "rm -rf dist",
       "dev": "tsc && node ./dist/server.js",
       "build": "tsc",
       "build:types": "tsc --declaration",
-      "docker:build": "docker build --load --target app -t ghcr.io/mtakla/cronops:latest .",
-      "docker:build-docs": "docker build --load --target docs -t ghcr.io/mtakla/cronops-docs:latest ."
+      "docker": "docker build --load --target app -t cronops-dev:local .",
+      "docker:docs": "docker build --load --target docs -t cronops-docs:local ."
    }
 }

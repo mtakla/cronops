@@ -43,21 +43,17 @@ All configured via simple, version-controllable ***.yml** based **job definition
 
 ### Install & run with Docker
 
-CronOps is built and optimized to run as a Docker container itself: 
+CronOps is built and optimized to run as a Docker container itself. By default the cronops contain 
 
 ```sh
 docker run \
-  --name cronops \
-  --user 1000:1000 \
   -v ./config:/config \
-  -v ./data:/data \
   -v ./data:/io/source \
   -v ./data:/io/target \
-  --restart unless-stopped \
+  -e PUID=1000 \
+  -e PGID=1000 \
   ghcr.io/mtakla/cronops:latest
 ```
-
-In same directory, type `docker compose up -d` to install and start the cronops service. 
 
 To check if the server is running:
 
@@ -84,6 +80,8 @@ target:
   retention: "20s"
 ```
 
+In same directory, type `docker compose up -d` to install and start the cronops service. 
+
 Now you can add more job configuration files to `./config/jobs`. For detailes, see [job configuration] (#job-configuration) section below.
 
 > [!NOTE]
@@ -92,9 +90,9 @@ Now you can add more job configuration files to `./config/jobs`. For detailes, s
 To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
 
 
-### Docker compose
+### Using Docker Compose
 
-To install and run CronOps via docker compose, just create a `compose.yaml` file:
+To install and run CronOps via docker compose, just create a `compose.yaml` file in an empty directory:
 
 ```yaml
 services:
@@ -104,15 +102,16 @@ services:
     restart: unless-stopped
     volumes:
       - ./config:/config
-      - ./data:/data
+      - ./logs:/data/logs
       - ./data:/io/source
       - ./data:/io/target
     environment:
+      PUID: 1000    
+      PGID: 1000
       TZ: Europe/Berlin
 ```
 
-
-#### Updating using Docker compose
+**Updating CronOps with Docker Compose**
 
 When using docker compose, to update to the latest version of CronOps, just type
 

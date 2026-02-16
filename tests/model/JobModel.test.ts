@@ -83,20 +83,17 @@ describe(JobModel.name, () => {
 
    it("targetPermission property should return correct values", () => {
       const job = new JobModel({ id: "testjob", action: "move", target: {} });
-      expect(job.targetPermissions).toBe(":::");
+      expect(job.getTargetPermissions().hasChanges()).toBe(false);
       job.target = { permissions: { file_mode: "640" } };
-      expect(job.targetPermissions).toBe("::640:");
+      expect(job.getTargetPermissions().fileMode).toBe(0o640);
+      expect(job.getTargetPermissions().dirMode).toBe(NaN);
       job.target = { permissions: { dir_mode: "750" } };
-      expect(job.targetPermissions).toBe(":::750");
-      job.target = { permissions: { file_mode: "644", dir_mode: "755" } };
-      expect(job.targetPermissions).toBe("::644:755");
-      job.target = { permissions: { owner: "1000:1000", file_mode: "640", dir_mode: "750" } };
-      expect(job.targetPermissions).toBe("1000:1000:640:750");
-      job.target = { permissions: { owner: "1001:1001" } };
-      expect(job.targetPermissions).toBe("1001:1001::");
-      job.target = { permissions: { owner: "1000:" } };
-      expect(job.targetPermissions).toBe("1000:::");
-      job.target = { permissions: { owner: ":0" } };
-      expect(job.targetPermissions).toBe(":0::");
+      expect(job.getTargetPermissions().fileMode).toBe(NaN);
+      expect(job.getTargetPermissions().dirMode).toBe(0o750);
+      job.target = { permissions: { owner: "1000:100", file_mode: "640", dir_mode: "750" } };
+      expect(job.getTargetPermissions().uid).toBe(1000);
+      expect(job.getTargetPermissions().gid).toBe(100);
+      expect(job.getTargetPermissions().fileMode).toBe(0o640);
+      expect(job.getTargetPermissions().dirMode).toBe(0o750);
    });
 });
