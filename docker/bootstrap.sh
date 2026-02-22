@@ -14,13 +14,17 @@ if [ -z "$group" ]; then
 fi
 
 # ensure user exists
-awk -F: -v uid="$uid" '$3==uid {found=1} END {exit !found}' /etc/passwd || \
+if ! awk -F: -v uid="$uid" '$3==uid {found=1} END {exit !found}' /etc/passwd; then
   adduser -D -u "$uid" -G "$group" cronops
+fi
 
 # resolve username by uid
 user="$(awk -F: -v uid="$uid" '$3==uid {print $1; exit}' /etc/passwd)"
 
-# set ownership
-chown -R "$uid:$gid" /app /config /data /io
+if [ "$(stat -c '%u' /config)" != "$uid" ];  then
+  chown "$uid:$gid" -R /config /data 
+  chown "$uid:$gid" /io/source /io/target
+fi
 
+# run command with user
 exec su-exec "$user" "$@"

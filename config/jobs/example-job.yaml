@@ -12,4 +12,4 @@ source:
     - "**/*.log"
 target:
   dir: /outbox
-  retention: "20s"
+  retention: "22s"

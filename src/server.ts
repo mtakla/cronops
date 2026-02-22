@@ -54,7 +54,7 @@ export async function start() {
 
    // called if config file has been loaded/reloaded
    jobLoader.onJobLoaded((job: Job) => {
-      if (job.enabled !== false) jobScheduler.scheduleJob(job);
+      jobScheduler.scheduleJob(job);
    });
 
    // called if config file has been removed from file system
@@ -63,11 +63,18 @@ export async function start() {
    });
 
    jobScheduler.onChanged((isReload: boolean) => {
-      const jobs = jobScheduler.getScheduledJobs();
-      console.log(`\nJob config ${isReload ? "changed" : "loaded"} (${plural(jobs.length, "active job")})`);
+      const jobs = jobScheduler.getScheduledJobsInfo();
+      console.log(`\nJob config ${isReload ? "changed" : "loaded"}`);
       for (const job of jobs) {
-         console.log(` 🕔 [${job.id}] scheduled (${chalk.greenBright(job.cron)})${job.dry_run ? " 👋 DRY-RUN mode!" : ""}`);
+         if (job.status !== "paused") console.log(` 🕔 [${job.id}] scheduled (${chalk.greenBright(job.cron)})${job.dry_run ? " 👋 DRY-RUN mode!" : ""}`);
       }
+      for (const job of jobs) {
+         if (job.status === "paused") console.log(` ⚫ [${job.id}] inactive`);
+      }
+   });
+
+   jobScheduler.onJobExecute((job: Job) => {
+      console.error(`[${job.id}] triggered manually`);
    });
 
    jobScheduler.onJobError((job: Job, err: Error) => {

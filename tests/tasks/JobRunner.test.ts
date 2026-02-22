@@ -24,16 +24,6 @@ beforeEach(async () => {
 });
 
 describe("JobRunner", () => {
-   it("running on disabled job should work", async () => {
-      const job = new JobModel({
-         id: "job1",
-         action: "copy",
-         enabled: false,
-      });
-      const task = new JobRunner(job, setup);
-      expect(await task.runJob()).toMatchObject({ copied: 0, deleted: 0, archived: 0, pruned: 0 });
-   });
-
    it("operating on zero source files should work", async () => {
       const job = new JobModel({
          id: "testjob",

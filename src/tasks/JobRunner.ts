@@ -4,7 +4,6 @@ import { ensureDir, moveSync, readJSON, writeJSON } from "fs-extra/esm";
 import { AbstractTask } from "./AbstractTask.js";
 import { JobRunnerContext } from "../models/JobRunnerContext.js";
 import { closeSync, fsyncSync, openSync, writeSync } from "node:fs";
-import { JobRunnerResult } from "../models/JobRunnerResult.js";
 import { FileHistoryModel } from "../models/FileHistoryModel.js";
 import type { JobModel } from "../models/JobModel.js";
 import type { JobRunnerSetup } from "../models/JobRunnerSetup.js";
@@ -33,12 +32,9 @@ export class JobRunner extends AbstractTask<RunnerResult> {
       // helper
       const { setup, job, events } = this;
 
-      // discard job execution if job has been disabled
-      if (job.enabled === false) return new JobRunnerResult();
-
-      // discard and disable job execution if there are too many errors
-      if (this.errorCount >= 25) {
-         job.enabled = false;
+      // pause job execution if there are too many errors
+      if (this.errorCount >= 31) {
+         this.pause();
          throw new Error("Too many errors. Job execution disabled!");
       }
 

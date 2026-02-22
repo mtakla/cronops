@@ -2,27 +2,36 @@ import cron, { type ScheduledTask } from "node-cron";
 import { setTimeout } from "node:timers/promises";
 import { EventEmitter } from "node:events";
 import { ENV } from "../types/Options.types.js";
-import type { Task } from "../types/Task.types.js";
+import type { Task, TaskInfo } from "../types/Task.types.js";
 
 export abstract class AbstractTask<T> implements Task {
    protected cronTask: ScheduledTask;
    protected events = new EventEmitter();
    protected errorCount = 0;
+   private runCount = 0;
+   private isScheduled = false;
    private isRunning = false;
+   private isPaused = false;
+   private lastRun?: number;
+   private lastDuration?: number;
 
    constructor(cronStr = "* * * * *") {
       // node-cron async wrapper
       const asyncRunner = async () => {
-         // prevent overlapping runs
-         if (!this.isRunning) {
+         // only execute if not paused or prevent overlapping runs
+         if (!this.isRunning && !this.isPaused) {
+            this.runCount++;
             this.isRunning = true;
+            this.lastRun = Date.now();
             try {
                this.events.emit("started");
                this.events.emit("finished", await this.run());
             } catch (err) {
+               this.errorCount++;
                this.events.emit("error", err instanceof Error ? err : new Error(String(err)));
             } finally {
                this.isRunning = false;
+               this.lastDuration = Date.now() - this.lastRun;
             }
          }
       };
@@ -44,25 +53,49 @@ export abstract class AbstractTask<T> implements Task {
    protected abstract run(): Promise<T>;
 
    public schedule(runImmediately = false) {
-      if (runImmediately) this.cronTask.once("task:started", () => this.execute());
+      if (runImmediately) this.cronTask.once("task:started", () => this.cronTask.execute());
       this.cronTask.start();
+      this.isScheduled = true;
    }
 
    public unschedule() {
       this.events.removeAllListeners();
       this.cronTask.destroy();
+      this.isScheduled = false;
    }
 
-   public execute(cb?: (result: T) => void) {
+   public pause() {
+      this.isPaused = true;
+   }
+
+   public resume() {
+      this.isPaused = false;
+   }
+
+   public getInfo(): TaskInfo {
+      return {
+         status: this.isRunning ? "running" : this.isPaused ? "paused" : this.isScheduled ? "scheduled" : "unscheduled",
+         runCount: this.runCount,
+         errorCount: this.errorCount,
+         lastRun: this.lastRun,
+         lastDuration: this.lastDuration,
+      };
+   }
+
+   public execute<T>(): Promise<T> {
       const status = this.cronTask.getStatus();
       if (status === "destroyed") throw new Error("Invalid task state (destroyed)");
       if (status === "running" || this.isRunning) throw new Error("Invalid task state (running)");
-      if (cb) this.events.once("finished", cb);
-      this.cronTask.execute();
+      this.events.emit("execute");
+      return this.cronTask.execute();
    }
 
    public onScheduled(cb: () => void) {
       this.cronTask.on("task:started", cb);
+   }
+
+   public onExecute(cb: () => void) {
+      this.events.on("execute", cb);
    }
 
    public onStarted(cb: () => void) {
@@ -74,7 +107,6 @@ export abstract class AbstractTask<T> implements Task {
    }
 
    public onError(cb: (error: Error) => void) {
-      this.errorCount++;
       this.events.on("error", (error: Error) => cb(error));
    }
 

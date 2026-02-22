@@ -47,6 +47,7 @@ CronOps is built and optimized to run as a Docker container itself.
 
 ```sh
 docker run \
+  -p 8083:8083 \
   -v ./config:/config \
   -v ./data:/io/source \
   -v ./data:/io/target \
@@ -118,12 +119,12 @@ docker compose pull && docker compose up -d
 
 in the same directory where `compose.yaml` has been created. 
 
-### Enable admin Web-API
+### Admin Web-API
 
 To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
 
 
-### Manual installation
+## Manual installation
 
 This requires [Node.js](https://nodejs.org/) (>= v24) to be installed on your server. 
 
@@ -146,15 +147,15 @@ This will ...
 
 - download the latest version of dotenvx & cronops 
 - load the environment settings defined in the `.env` file
-- start the cronops service with the loaded environment settings 
+- start the CronOps service with the loaded environment settings 
 - create config directory in `./config` if it doesn't exist
 - create logs directory in `./logs` if it doesn't exist
 
 You can now add job configuration files to `./config/jobs` directory. Each YAML file in this directory defines a job. The server will hot reload when job files are added, modified, or removed.
 
-### Use in your code
+## Use in your code
 
-Install CronOps in your code using npm
+Install CronOps in your project using npm
 
 ```
 npm install @mtakla/cronops --save
@@ -193,8 +194,8 @@ runner.onFinished(() => {
   console.log("job finished!");
 });
 
-runner.onError(() => {
-  console.log("job finished!");
+runner.onError((err) => {
+  console.log(`job failed with ${err.message}`);
 });
 
 // finally schedule job
@@ -362,7 +363,7 @@ For jobs of action type `exec` the following environment variables are available
 | `CROPS_TEMP_DIR`   | absolute path to the configured temp directory                   |
 | `CROPS_LOG_DIR`    | absolute path to the configured log directory                    |
 | `CROPS_DRY_RUN`    | "true", if dry_run mode is enabled                               |
-| `CROPS_VERBOSE`    | "true", if dry_run mode is enabled                               |
+| `CROPS_VERBOSE`    | "true", if verbose mode is enabled                               |
 
 
 If the exec action is configured to run on selected `source` files:

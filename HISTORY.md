@@ -2,6 +2,7 @@
 
 ## version 0.1.1
 
+ - ADDED: pause/resume job scheduling via web api
  - ADDED: Web-API support including openAPI WebUI for testing
  - ADDED: Docker PUID/PGID support to run CronOps with explicit user/group privileges
  - ADDED: job action `exec` introduced

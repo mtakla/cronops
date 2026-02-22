@@ -15,7 +15,7 @@ declare module "fastify" {
 // server port for simple admin web-api
 const port = Number(process.env[ENV.PORT] ?? 8118);
 const host = process.env[ENV.HOST] ?? "127.0.0.1";
-const baseUrl = process.env[ENV.BASE_URL] ?? "http://127.0.0.1:8118";
+const baseUrl = process.env[ENV.BASE_URL] ?? `http://127.0.0.1:${port}`;
 const apiKey = process.env[ENV.API_KEY];
 
 app.addHook("preHandler", async (request, reply) => {
@@ -52,7 +52,38 @@ app.get("/health", async (request, reply) => {
    reply.code(200).send({ status: "ok", active_jobs: jobs.length });
 });
 
-app.post("/api/jobs/trigger/:jobId", async (request, reply) => {
+app.get("/api/jobs", async (request) => {
+   const jobScheduler = request.server.scheduler;
+   return jobScheduler.getScheduledJobs();
+});
+
+app.get("/api/jobs/:jobId", async (request, reply) => {
+   const { jobId } = request.params as { jobId: string };
+   const jobScheduler = request.server.scheduler;
+   if (!jobScheduler.isJobScheduled(jobId)) {
+      return reply.code(404).send();
+   }
+   return jobScheduler.getJob(jobId);
+});
+
+app.get("/api/status", async (request) => {
+   const jobScheduler = request.server.scheduler;
+   return jobScheduler.getScheduledJobsInfo();
+});
+
+app.post("/api/pause", async (request) => {
+   const jobScheduler = request.server.scheduler;
+   await jobScheduler.pauseScheduling();
+   return { paused: true };
+});
+
+app.post("/api/resume", async (request) => {
+   const jobScheduler = request.server.scheduler;
+   await jobScheduler.resumeScheduling();
+   return { resumed: true };
+});
+
+app.post("/api/trigger/:jobId", async (request, reply) => {
    const { jobId } = request.params as { jobId: string };
    const jobScheduler = request.server.scheduler;
    if (!jobScheduler.isJobScheduled(jobId)) {

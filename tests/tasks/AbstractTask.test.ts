@@ -69,15 +69,15 @@ describe(AbstractTask.name, () => {
 
    it("schedule() and eventing on TestTask should work", async () => {
       const task = new TestTask();
-      const startedCallback = vi.fn();
-      const finishedCallback = vi.fn();
-      task.onStarted(startedCallback);
-      task.onFinished(finishedCallback);
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
       task.schedule(true);
       await vi.waitFor(
          () => {
-            expect(startedCallback).toHaveBeenCalledTimes(1);
-            expect(finishedCallback).toHaveBeenCalledWith(111);
+            expect(startedCb).toHaveBeenCalledTimes(1);
+            expect(finishedCb).toHaveBeenCalledWith(111);
             task.unschedule();
          },
          { timeout: 2000 },
@@ -86,14 +86,14 @@ describe(AbstractTask.name, () => {
 
    it("schedule() and eventing on ErrorTask should work", async () => {
       const task = new ErrorTask();
-      const startedCallback = vi.fn();
+      const startedCb = vi.fn();
       const errorCallback = vi.fn();
-      task.onStarted(startedCallback);
+      task.onStarted(startedCb);
       task.onError(errorCallback);
       task.schedule(true);
       await vi.waitFor(
          () => {
-            expect(startedCallback).toHaveBeenCalledTimes(1);
+            expect(startedCb).toHaveBeenCalledTimes(1);
             expect(errorCallback).toBeCalled();
             task.unschedule();
          },
@@ -101,99 +101,138 @@ describe(AbstractTask.name, () => {
       );
    });
 
-   it("execute() on unscheduled (stopped) task should not work", async () => {
+   it("execute() after schedule() and eventing should work", async () => {
       const task = new TestTask();
-      const callback = vi.fn();
-      task.onStarted(callback);
-      task.execute();
+      const startedCb = vi.fn();
+      const scheduledCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
+      task.onScheduled(() => {
+         scheduledCb();
+         task.execute();
+      });
+      task.schedule();
       await vi.waitFor(() => {
-         expect(callback).not.toBeCalled();
+         expect(scheduledCb).toHaveBeenCalledTimes(1);
+         expect(startedCb).toHaveBeenCalledTimes(1);
+         expect(finishedCb).toHaveBeenCalledWith(111);
       });
    });
 
    it("execute() on TestTask should work", async () => {
       const task = new TestTask();
-      const startedCallback = vi.fn();
-      const finishedCallback = vi.fn();
-      task.onScheduled(() => {
-         task.execute();
-      });
-      task.onStarted(startedCallback);
-      task.onFinished(finishedCallback);
-      task.schedule(true);
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
+      task.execute();
       await vi.waitFor(() => {
-         expect(startedCallback).toHaveBeenCalledTimes(1);
-         expect(finishedCallback).toHaveBeenCalledWith(111);
+         expect(startedCb).toHaveBeenCalledTimes(1);
+         expect(finishedCb).toHaveBeenCalledWith(111);
          task.unschedule();
       });
    });
 
    it("execute() on TimedTask should work", async () => {
       const task = new TimedTask();
-      const startedCallback = vi.fn();
-      const finishedCallback = vi.fn();
-      task.onStarted(startedCallback);
-      task.onFinished(finishedCallback);
-      task.schedule(true);
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
+      task.execute();
       await vi.waitFor(() => {
-         expect(startedCallback).toHaveBeenCalledTimes(1);
-         expect(finishedCallback).toHaveBeenCalledWith(42);
+         expect(startedCb).toHaveBeenCalledTimes(1);
+         expect(finishedCb).toHaveBeenCalledWith(42);
+         task.unschedule();
+      });
+   });
+
+   it("execute() on paused TimedTask should work", async () => {
+      const task = new TimedTask();
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
+      task.pause();
+      task.execute();
+      await vi.waitFor(() => {
+         expect(startedCb).toHaveBeenCalledTimes(0);
          task.unschedule();
       });
    });
 
    it("execute() on unscheduled TimedTask should work", async () => {
       const task = new TimedTask();
-      const startedCallback = vi.fn();
-      const finishedCallback = vi.fn();
-      task.onStarted(startedCallback);
-      task.onFinished(finishedCallback);
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
       task.execute();
       await vi.waitFor(() => {
-         expect(startedCallback).toHaveBeenCalledTimes(1);
-         expect(finishedCallback).toHaveBeenCalledWith(42);
+         expect(startedCb).toHaveBeenCalledTimes(1);
+         expect(finishedCb).toHaveBeenCalledWith(42);
          task.unschedule();
       });
    });
 
    it("Second execute() on running TimedTask should not work", async () => {
       const task = new TimedTask();
-      const startedCallback = vi.fn();
-      const finishedCallback = vi.fn();
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
       task.onStarted(() => {
          expect(() => {
             task.execute(); // <----- 2nd run
          }).toThrow(Error);
-         startedCallback();
+         startedCb();
       });
-      task.onFinished(finishedCallback);
+      task.onFinished(finishedCb);
       task.execute();
       await vi.waitFor(() => {
-         expect(startedCallback).toHaveBeenCalledTimes(1);
-         expect(finishedCallback).toHaveBeenCalledTimes(1);
-         expect(finishedCallback).toHaveBeenCalledWith(42);
+         expect(startedCb).toHaveBeenCalledTimes(1);
+         expect(finishedCb).toHaveBeenCalledTimes(1);
+         expect(finishedCb).toHaveBeenCalledWith(42);
+         task.unschedule();
+      });
+   });
+
+   it("resume() on paused TimedTask should work", async () => {
+      const task = new TimedTask();
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
+      task.pause();
+      try {
+         await task.execute();
+      } catch {}
+      task.resume();
+      await task.execute();
+      await vi.waitFor(() => {
+         expect(startedCb).toHaveBeenCalledTimes(1);
+         expect(finishedCb).toHaveBeenCalledTimes(1);
          task.unschedule();
       });
    });
 
    it("gracefulTerminate() on TestTask should work", async () => {
       const task = new TestTask();
-      const startedCallback = vi.fn();
-      const finishedCallback = vi.fn();
-      task.onStarted(startedCallback);
-      task.onFinished(finishedCallback);
+      const startedCb = vi.fn();
+      const finishedCb = vi.fn();
+      task.onStarted(startedCb);
+      task.onFinished(finishedCb);
       task.execute();
       await task.gracefulTerminate();
-      expect(startedCallback).toHaveBeenCalledTimes(1);
-      expect(finishedCallback).toHaveBeenCalledWith(111);
+      expect(startedCb).toHaveBeenCalledTimes(1);
+      expect(finishedCb).toHaveBeenCalledWith(111);
    });
 
    it("gracefulTerminate() on TimedTask with timeout should work", async () => {
       const task = new TimedTask();
-      const finishedCallback = vi.fn();
-      task.onFinished(finishedCallback);
+      const finishedCb = vi.fn();
+      task.onFinished(finishedCb);
       task.execute();
       await task.gracefulTerminate(10); // <--- low timeout!
-      expect(finishedCallback).toHaveBeenCalledTimes(0);
+      expect(finishedCb).toHaveBeenCalledTimes(0);
    });
 });

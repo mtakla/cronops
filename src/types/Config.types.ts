@@ -3,7 +3,7 @@ import { z } from "zod";
 export const JobSchema = z.strictObject({
    id: z.string().optional(),
    cron: z.string().min(1).optional(),
-   action: z.literal(["exec", "call", "copy", "move", "delete", "archive"]),
+   action: z.enum(["exec", "call", "copy", "move", "delete", "archive"]),
    command: z.string().optional(),
    shell: z.boolean().or(z.string().min(1)).optional(),
    args: z.array(z.string().min(1)).min(1).optional(),

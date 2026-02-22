@@ -1,0 +1,16 @@
+services:
+  cronops:
+    image: cronops-dev:local
+    container_name: cronops-dev
+    restart: unless-stopped
+    volumes:
+      - ../../build/tests/docker/config:/config
+      - ../../build/tests/docker/logs:/data/logs
+      - ../../build/tests/docker/data:/io/source
+      - ../../build/tests/docker/data:/io/target
+    ports:
+      - 8228:8083
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Europe/Berlin

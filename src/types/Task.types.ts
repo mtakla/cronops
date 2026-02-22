@@ -15,6 +15,14 @@ export type RunnerResult = {
    durationMs: number;
 };
 
+export type TaskInfo = {
+   status: "unscheduled" | "scheduled" | "running" | "paused";
+   runCount: number;
+   errorCount: number;
+   lastRun: number | undefined;
+   lastDuration: number | undefined;
+};
+
 export type SourceFile = {
    sourceEntry: string;
    sourcePath: string;
@@ -38,7 +46,7 @@ export type FileHistory = {
 export interface Task {
    schedule(runImmediately?: boolean): void;
    unschedule(): void;
-   execute(cb: () => void): void;
+   execute<T>(): Promise<T>;
    onScheduled(cb: () => void): void;
    onStarted(cb: () => void): void;
    onFinished<T>(cb: (result: T) => void): void;
