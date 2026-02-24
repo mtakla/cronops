@@ -8,11 +8,11 @@ import { closeSync, openSync } from "node:fs";
 import { EventEmitter } from "node:stream";
 import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
 import { JobError } from "../../src/errors/JobError.js";
-import { FileCopyHandler } from "../../src/handlers/FileCopyHandler.js";
+import { FileMoveHandler } from "../../src/handlers/FileMoveHandler.js";
 import type { Job } from "../../src/types/Config.types.js";
 
-const workDir = resolve("./build/tests/FileCopyHandler");
-const fixtureDir = resolve("./tests/fixtures/files");
+const workDir = resolve("./build/test/FileMoveHandler");
+const fixtureDir = resolve("./test/fixtures/files");
 const sourceRoot = join(workDir, "source");
 const targetRoot = join(workDir, "target");
 const events = new EventEmitter();
@@ -30,17 +30,17 @@ beforeEach(() => {
    errMock.mockReset();
 });
 
-describe(FileCopyHandler.name, () => {
+describe(FileMoveHandler.name, () => {
    it("validateJob() should work ", () => {
-      const handler = new FileCopyHandler(new JobRunnerSetup({ sourceRoot, targetRoot }));
+      const handler = new FileMoveHandler(new JobRunnerSetup({ sourceRoot, targetRoot }));
       expect(() => {
-         handler.validateJob({ id: "valid-job", action: "copy", source: { dir: "/subfolder" }, target: {} });
+         handler.validateJob({ id: "valid-job", action: "move", source: { dir: "/subfolder" }, target: {} });
       }).not.toThrow(JobError);
       expect(() => {
-         handler.validateJob({ id: "missing-target-config", action: "copy", source: {} });
+         handler.validateJob({ id: "missing-target-config", action: "move", source: {} });
       }).toThrow(JobError);
       expect(() => {
-         handler.validateJob({ id: "missing-source-dir", action: "copy", source: { dir: "unknown" } });
+         handler.validateJob({ id: "missing-source-dir", action: "move", source: { dir: "unknown" } });
       }).toThrow(JobError);
    });
 
@@ -48,11 +48,11 @@ describe(FileCopyHandler.name, () => {
       const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
       const ctx = createRunnerContext(setup, {
          id: "no-files",
-         action: "copy",
+         action: "move",
          source: { dir: "/" },
          target: { dir: "/" },
       });
-      const handler = new FileCopyHandler(setup);
+      const handler = new FileMoveHandler(setup);
       await handler.processFiles(ctx, [], new FileHistoryModel());
       expect(pathExistsSync(join(targetRoot, "subfolder"))).toBeFalsy();
       expect(errMock).toBeCalledTimes(0);
@@ -63,14 +63,14 @@ describe(FileCopyHandler.name, () => {
       const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
       const ctx = createRunnerContext(setup, {
          id: "delete-two-files",
-         action: "copy",
+         action: "move",
          source: { dir: "/" },
          target: { dir: "/" },
       });
-      const handler = new FileCopyHandler(setup);
+      const handler = new FileMoveHandler(setup);
       await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json"], new FileHistoryModel());
       expect(pathExistsSync(join(targetRoot, "subfolder", "data2.json"))).toBeTruthy();
-      expect(pathExistsSync(join(sourceRoot, "subfolder", "data2.json"))).toBeTruthy();
+      expect(pathExistsSync(join(sourceRoot, "subfolder", "data2.json"))).toBeFalsy();
       expect(errMock).toBeCalledTimes(0);
       closeLog(ctx.getLogFd());
    });
@@ -79,14 +79,15 @@ describe(FileCopyHandler.name, () => {
       const setup = new JobRunnerSetup({ sourceRoot, targetRoot });
       const ctx = createRunnerContext(setup, {
          id: "error-unknown-file",
-         action: "copy",
+         action: "move",
          source: { dir: "/" },
          target: { dir: "/" },
       });
-      const handler = new FileCopyHandler(setup);
+      const handler = new FileMoveHandler(setup);
       await handler.processFiles(ctx, ["data1.json", "subfolder/data2.json", "unknown"], new FileHistoryModel());
-      expect(errMock).toBeCalledTimes(1);
       expect(pathExistsSync(join(targetRoot, "subfolder", "data2.json"))).toBeTruthy();
+      expect(pathExistsSync(join(sourceRoot, "subfolder", "data2.json"))).toBeFalsy();
+      expect(errMock).toBeCalledTimes(1);
       closeLog(ctx.getLogFd());
    });
 });

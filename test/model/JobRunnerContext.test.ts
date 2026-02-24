@@ -7,7 +7,7 @@ import { emptyDirSync, ensureDirSync, readFileSync } from "fs-extra";
 import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
 import { closeSync, openSync } from "node:fs";
 
-const workDir = resolve("./build/tests/JobRunnerContext");
+const workDir = resolve("./build/test/JobRunnerContext");
 const setup = new JobRunnerSetup({ sourceRoot: "/source", targetRoot: "/target" });
 
 beforeAll(() => {

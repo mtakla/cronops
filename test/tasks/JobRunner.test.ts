@@ -7,8 +7,8 @@ import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
 import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
 
 // remember app dir
-const dir = resolve("./tests/fixtures");
-const workDir = resolve("./build/tests/JobRunner");
+const dir = resolve("./test/fixtures");
+const workDir = resolve("./build/test/JobRunner");
 
 const setup = new JobRunnerSetup({
    sourceRoot: join(workDir, "files"),

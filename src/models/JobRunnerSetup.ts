@@ -34,14 +34,14 @@ export class JobRunnerSetup implements RunnerOptions {
    private handlerMap = new Map<JobAction, AbstractHandler>();
 
    constructor(options: RunnerOptions = {}) {
-      this.sourceRoot = resolve(options.sourceRoot ?? process.env[ENV.SOURCE_ROOT] ?? "./");
-      this.targetRoot = resolve(options.targetRoot ?? process.env[ENV.TARGET_ROOT] ?? "./");
-      this.source2Root = resolve(options.source2Root ?? process.env[ENV.SOURCE_2_ROOT] ?? "./");
-      this.target2Root = resolve(options.target2Root ?? process.env[ENV.TARGET_2_ROOT] ?? "./");
-      this.source3Root = resolve(options.source3Root ?? process.env[ENV.SOURCE_3_ROOT] ?? "./");
-      this.target3Root = resolve(options.target3Root ?? process.env[ENV.TARGET_3_ROOT] ?? "./");
-      this.configDir = resolve(options.configDir ?? process.env[ENV.CONFIG_DIR] ?? join(os.homedir(), ".cronops", "config"));
-      this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? join(os.homedir(), ".cronops", "logs"));
+      this.sourceRoot = resolve(options.sourceRoot ?? process.env[ENV.SOURCE_ROOT] ?? "./data");
+      this.targetRoot = resolve(options.targetRoot ?? process.env[ENV.TARGET_ROOT] ?? "./data");
+      this.source2Root = resolve(options.source2Root ?? process.env[ENV.SOURCE_2_ROOT] ?? "./data");
+      this.target2Root = resolve(options.target2Root ?? process.env[ENV.TARGET_2_ROOT] ?? "./data");
+      this.source3Root = resolve(options.source3Root ?? process.env[ENV.SOURCE_3_ROOT] ?? "./data");
+      this.target3Root = resolve(options.target3Root ?? process.env[ENV.TARGET_3_ROOT] ?? "./data");
+      this.configDir = resolve(options.configDir ?? process.env[ENV.CONFIG_DIR] ?? "./config");
+      this.logDir = resolve(options.logDir ?? process.env[ENV.LOG_DIR] ?? "./logs");
       this.tempDir = resolve(options.tempDir ?? process.env[ENV.TEMP_DIR] ?? join(os.tmpdir(), "cronops"));
       this.uid = options.uid ?? process.env[ENV.PUID] ?? `${process.getuid?.() ?? "0"}`;
       this.gid = options.gid ?? process.env[ENV.PGID] ?? `${process.getgid?.() ?? "0"}`;

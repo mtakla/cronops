@@ -11,10 +11,10 @@ import type { Job } from "../../src/types/Config.types.js";
 import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
 import { JobError } from "../../src/errors/JobError.js";
 
-const workDir = resolve("./build/tests/ExecHandler");
-const scriptsDir = resolve("./tests/fixtures/scripts");
-const sourceRoot = resolve("./tests/fixtures");
-const configDir = resolve("./tests/fixtures");
+const workDir = resolve("./build/test/ExecHandler");
+const scriptsDir = resolve("./test/fixtures/scripts");
+const sourceRoot = resolve("./test/fixtures");
+const configDir = resolve("./test/fixtures");
 const nodeExec = process.argv[0];
 const events = new EventEmitter();
 
@@ -47,6 +47,8 @@ describe(ExecHandler.name, () => {
          id: "exec-ok-os",
          action: "exec",
          command: `${nodeExec}`,
+         verbose: true,
+         env: { CROPS_TEST: "true" },
          args: [`${join(scriptsDir, "exec-ok.js")}`],
       });
       const handler = new ExecHandler(setup);
@@ -61,6 +63,7 @@ describe(ExecHandler.name, () => {
          action: "exec",
          shell: true,
          command: `node ${join(scriptsDir, "exec-ok.js")}`,
+         env: { CROPS_TEST: "true" },
       });
       const handler = new ExecHandler(setup);
       await handler.process(ctx);

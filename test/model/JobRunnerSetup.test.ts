@@ -14,6 +14,7 @@ import { afterEach } from "node:test";
 
 // For testing purpose only
 const appDir = resolve(join(dirname(fileURLToPath(import.meta.url)), "..", ".."));
+const dataDir = join(appDir, "data");
 const origEnv = { ...process.env };
 
 // avoid process.env side effects
@@ -29,15 +30,15 @@ afterEach(() => {
 describe(JobRunnerSetup.name, () => {
    it("initialization with defaults should work", () => {
       const setup = new JobRunnerSetup();
-      expect(setup.sourceRoot).toBe(appDir);
-      expect(setup.targetRoot).toBe(appDir);
-      expect(setup.source2Root).toBe(appDir);
-      expect(setup.target2Root).toBe(appDir);
-      expect(setup.source3Root).toBe(appDir);
-      expect(setup.target3Root).toBe(appDir);
+      expect(setup.sourceRoot).toBe(dataDir);
+      expect(setup.targetRoot).toBe(dataDir);
+      expect(setup.source2Root).toBe(dataDir);
+      expect(setup.target2Root).toBe(dataDir);
+      expect(setup.source3Root).toBe(dataDir);
+      expect(setup.target3Root).toBe(dataDir);
       expect(setup.tempDir).toBe(join(os.tmpdir(), "cronops"));
-      expect(setup.configDir).toBe(join(os.homedir(), ".cronops", "config"));
-      expect(setup.logDir).toBe(join(os.homedir(), ".cronops", "logs"));
+      expect(setup.configDir).toBe(join(appDir, "config"));
+      expect(setup.logDir).toBe(join(appDir, "logs"));
       expect(setup.shell).toBe(false);
       expect(setup.uid).toBe(process.getuid ? `${process.getuid?.()}` : "0");
       expect(setup.gid).toBe(process.getgid ? `${process.getgid?.()}` : "0");
@@ -99,12 +100,12 @@ describe(JobRunnerSetup.name, () => {
 
    it("resolveSourceDir() should return correct values", () => {
       let setup = new JobRunnerSetup(); // Defaults
-      expect(setup.resolveSourceDir("/foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveSourceDir("foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveSourceDir("./foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveSourceDir("$1/foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveSourceDir("$2/foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveSourceDir("$3/foo")).toBe(join(appDir, "/foo"));
+      expect(setup.resolveSourceDir("/foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveSourceDir("foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveSourceDir("./foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveSourceDir("$1/foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveSourceDir("$2/foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveSourceDir("$3/foo")).toBe(join(dataDir, "/foo"));
       setup = new JobRunnerSetup({ sourceRoot: "/source", source2Root: "" });
       expect(setup.resolveSourceDir()).toBe("/source");
       expect(setup.resolveSourceDir("")).toBe("/source");
@@ -112,19 +113,19 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.resolveSourceDir("$1/")).toBe("/source");
       expect(setup.resolveSourceDir("$1/bar")).toBe("/source/bar");
       expect(setup.resolveSourceDir("/foo")).toBe("/source/foo");
-      expect(setup.resolveSourceDir("$3/foo")).toBe(join(appDir, "foo"));
+      expect(setup.resolveSourceDir("$3/foo")).toBe(join(dataDir, "foo"));
       expect(setup.resolveSourceDir("$2")).toBe(appDir);
       expect(setup.resolveSourceDir("$2/./x")).toBe(join(appDir, "x"));
    });
 
    it("resolveTargetDir() should return correct values", () => {
       let setup = new JobRunnerSetup(); // Defaults
-      expect(setup.resolveTargetDir("/foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveTargetDir("foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveTargetDir("./foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveTargetDir("$1/foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveTargetDir("$2/foo")).toBe(join(appDir, "/foo"));
-      expect(setup.resolveTargetDir("$3/foo")).toBe(join(appDir, "/foo"));
+      expect(setup.resolveTargetDir("/foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveTargetDir("foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveTargetDir("./foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveTargetDir("$1/foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveTargetDir("$2/foo")).toBe(join(dataDir, "/foo"));
+      expect(setup.resolveTargetDir("$3/foo")).toBe(join(dataDir, "/foo"));
       setup = new JobRunnerSetup({ targetRoot: "/source", target2Root: "" });
       expect(setup.resolveTargetDir()).toBe("/source");
       expect(setup.resolveTargetDir("")).toBe("/source");
@@ -132,7 +133,7 @@ describe(JobRunnerSetup.name, () => {
       expect(setup.resolveTargetDir("$1/")).toBe("/source");
       expect(setup.resolveTargetDir("$1/bar")).toBe("/source/bar");
       expect(setup.resolveTargetDir("/foo")).toBe("/source/foo");
-      expect(setup.resolveTargetDir("$3/foo")).toBe(join(appDir, "foo"));
+      expect(setup.resolveTargetDir("$3/foo")).toBe(join(dataDir, "foo"));
       expect(setup.resolveTargetDir("$2")).toBe(appDir);
       expect(setup.resolveTargetDir("$2/./x")).toBe(join(appDir, "x"));
    });

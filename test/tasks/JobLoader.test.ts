@@ -4,11 +4,11 @@ import { join, resolve } from "node:path";
 import { JobLoader } from "../../src/tasks/JobLoader.js";
 
 // remember app dir
-const workDir = resolve("./build/tests/JobLoader");
+const workDir = resolve("./build/test/JobLoader");
 
 beforeAll(async () => {
    await fsx.emptyDir(workDir);
-   await fsx.copy("./tests/fixtures", workDir);
+   await fsx.copy("./test/fixtures", workDir);
 });
 
 describe(JobLoader.name, () => {

@@ -6,10 +6,10 @@ import { JobRunnerSetup } from "../../src/models/JobRunnerSetup.js";
 import { JobError } from "../../src/errors/JobError.js";
 import type { Job } from "../../src/types/Config.types.js";
 
-const workDir = resolve("./build/tests/JobScheduler");
+const workDir = resolve("./build/test/JobScheduler");
 
 const setup = new JobRunnerSetup({
-   sourceRoot: "./tests/fixtures",
+   sourceRoot: "./test/fixtures",
    targetRoot: join(workDir, "target"),
    logDir: workDir,
 });

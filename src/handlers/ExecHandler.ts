@@ -31,7 +31,6 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
     * @param entry
     */
    protected async exec(ctx: RunnerContext, entry?: SourceFile) {
-      const { targetDir } = ctx;
       const verbose = ctx.job.verbose === true;
 
       await new Promise<void>((resolve, reject) => {
@@ -65,7 +64,6 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
             stdio: ["ignore", verbose ? logFd : "ignore", verbose ? logFd : "ignore"],
             shell: ctx.job.shell ?? this.setup.shell,
             env: { ...process.env, ...env },
-            cwd: targetDir,
          });
 
          // remember pid

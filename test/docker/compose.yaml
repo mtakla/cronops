@@ -4,10 +4,10 @@ services:
     container_name: cronops-dev
     restart: unless-stopped
     volumes:
-      - ../../build/tests/docker/config:/config
-      - ../../build/tests/docker/logs:/data/logs
-      - ../../build/tests/docker/data:/io/source
-      - ../../build/tests/docker/data:/io/target
+      - ../../build/test/docker/config:/config
+      - ../../build/test/docker/logs:/data/logs
+      - ../../build/test/docker/data:/io/source
+      - ../../build/test/docker/data:/io/target
     ports:
       - 8228:8083
     environment:

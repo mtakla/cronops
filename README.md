@@ -128,16 +128,22 @@ To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Deta
 
 This requires [Node.js](https://nodejs.org/) (>= v24) to be installed on your server. 
 
-First step is to create an empty CronOps app directory with a `.env` file that contains your configuration settings, e.g.:
+To install & start CronOps, type:
 
-```ini
-CROPS_SOURCE_ROOT=./data                    # change as you like
-CROPS_TARGET_ROOT=./data                    # change as you like
-CROPS_CONFIG_DIR=./config                   # default is ~/.cronops/config
-CROPS_LOG_DIR=./logs                        # default is ~/.cronops/logs
+
+```bash
+npx @mtakla/cronops@next
 ```
 
-To install & start CronOps, type:
+For configuration, create an empty folder with an `.env` file that contains your config settings (see [Configuration](#configuration) section below).
+
+```dotenv
+CROPS_CONFIG_DIR=./config
+CROPS_TARGET_ROOT=./data
+CROPS_SOURCE_ROOT=./data
+```
+
+To start CronOps with 
 
 ```bash
 npx @dotenvx/dotenvx run -- npx @mtakla/cronops
@@ -145,11 +151,14 @@ npx @dotenvx/dotenvx run -- npx @mtakla/cronops
 
 This will ...
 
-- download the latest version of dotenvx & cronops 
-- load the environment settings defined in the `.env` file
-- start the CronOps service with the loaded environment settings 
-- create config directory in `./config` if it doesn't exist
-- create logs directory in `./logs` if it doesn't exist
+- download the latest version of **dotenvx** and **cronops** 
+- load environment settings defined in the `.env` file
+- create job config directory in `./config` with some example jobs
+- starts the CronOps service
+- the **example job** `[example job]` is active by default and scheduled to run every 5 seconds: 
+  - the job will move files found in `./data/inbox` to `./data/outbox`
+  - in addition, all files moved to `./data/outbox` will be automatically deleted after 30 seconds
+
 
 You can now add job configuration files to `./config/jobs` directory. Each YAML file in this directory defines a job. The server will hot reload when job files are added, modified, or removed.
 
@@ -203,27 +212,28 @@ runner.schedule();
 ```
 
 
+
 ## Configuration 
 
 The CronOps service can be configured with the following environment variables:
 
-| ENV                   | Description                                                                                                            | Docker defaults |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
-| `CROPS_SOURCE_ROOT`   | Path to primary source directory                                                                                       | `/io/source`    |
-| `CROPS_TARGET_ROOT`   | Path to primary target directory                                                                                       | `/io/target`    |
-| `CROPS_SOURCE_2_ROOT` | Path to secondary source directory                                                                                     | `/io/source2`   |
-| `CROPS_TARGET_2_ROOT` | Path to secondary target directory                                                                                     | `/io/target2`   |
-| `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory                                                                                      | `/io/source3`   |
-| `CROPS_TARGET_3_ROOT` | Path to tertiary target directory                                                                                      | `/io/target3`   |
-| `CROPS_CONFIG_DIR`    | Path to the config directory where job files are located                                                               | `/config`       |
-| `CROPS_TEMP_DIR`      | Path to temporary folder used for dry-run mode                                                                         | `/data/temp`    |
-| `CROPS_LOG_DIR`       | Path to directory where job logs and file history are stored                                                           | `/data/logs`    |
-| `CROPS_HOST`          | Host address for the Admin API server                                                                                  | `0.0.0.0`       |
-| `CROPS_PORT`          | Port for the Admin API server                                                                                          | `8083`          |
-| `CROPS_EXEC_SHELL`    | (*Optional*) Default shell for `exec` actions. Can be `false`, `true`, or path                                         | `false`         |
-| `CROPS_API_KEY`       | (*Optional*) API key to secure admin API endpoints. Must be a hex‑encoded 256‑bit secret (e.g. 'openssl rand -hex 32') | -               |
-| `CROPS_BASE_URL`      | (*Optional*) Base URL for admin API and OpenAPI docs                                                                   | -               |
-| `TZ`                  | (*Optional*) Timezone for cron scheduling (standard timezone format)                                                   | `UTC`           |
+| ENV                   | Description                                                                                                                | Docker defaults |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `CROPS_SOURCE_ROOT`   | Path to primary source directory                                                                                           | `/io/source`    |
+| `CROPS_TARGET_ROOT`   | Path to primary target directory                                                                                           | `/io/target`    |
+| `CROPS_SOURCE_2_ROOT` | Path to secondary source directory                                                                                         | `/io/source2`   |
+| `CROPS_TARGET_2_ROOT` | Path to secondary target directory                                                                                         | `/io/target2`   |
+| `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory                                                                                          | `/io/source3`   |
+| `CROPS_TARGET_3_ROOT` | Path to tertiary target directory                                                                                          | `/io/target3`   |
+| `CROPS_CONFIG_DIR`    | Path to the config directory where job files are located                                                                   | `/config`       |
+| `CROPS_TEMP_DIR`      | Path to temporary folder used for dry-run mode                                                                             | `/data/temp`    |
+| `CROPS_LOG_DIR`       | Path to directory where job logs and file history are stored                                                               | `/data/logs`    |
+| `CROPS_HOST`          | Host address for the admin API server                                                                                      | `0.0.0.0`       |
+| `CROPS_PORT`          | Port for the admin API server                                                                                              | `8083`          |
+| `CROPS_EXEC_SHELL`    | (*Optional*) Default shell for `exec` actions. Can be `false` (no shell), `true` (default shell), or path like `/bin/bash` | `false`         |
+| `CROPS_API_KEY`       | (*Optional*) API key to secure admin API endpoints. Must be a hex‑encoded 256‑bit secret (e.g. 'openssl rand -hex 32')     | -               |
+| `CROPS_BASE_URL`      | (*Optional*) Base URL for admin API and OpenAPI docs                                                                       | -               |
+| `TZ`                  | (*Optional*) Timezone for cron scheduling (standard timezone format)                                                       | `UTC`           |
 
 
 ## Job Configuration

@@ -13,6 +13,26 @@ export type { Job } from "./types/Config.types.js";
 
 /**
  * Creates a `JobLoader` instance to watch and auto-reload job configurations
+ * Example:
+ * ```js
+ * import { createJobLoader } from "@mtakla/cronops";
+ *
+ * // create runner options
+ * const jobLoader = createJobLoader({ configDir: "./config" });
+ *
+ * // called if a job config has beed loaded from config dir (initialy or after change)
+ * jobLoader.onJobLoaded((job: Job, isReload: boolean) => {
+ *    console.log('job loaded: " + job.id);
+ * });
+ *
+ * // called if a job config has been deleted from the config dir
+ * jobLoader.onJobDeleted((jobId: string) => {
+ *    console.log("job deleted: " + jobId);
+ * });
+ *
+ * // schedule job loader and execute immediately
+ * jobLoader.schedule(true)
+ * ```
  * @param options loader options
  * @returns the created `JobLoader`instance
  */

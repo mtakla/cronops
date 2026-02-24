@@ -111,7 +111,7 @@ ENTRYPOINT ["/usr/local/bin/bootstrap.sh"]
 CMD ["node", "./dist/server.js"]
 
 # -------------------------------
-# DOCUMENATION STAGE
+# DOCUMENTATION STAGE
 # -------------------------------
 FROM nginx:alpine AS docs
 
