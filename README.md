@@ -1,13 +1,14 @@
 # CronOps
 
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://github.com/mtakla/cronops/blob/master/LICENSE)
-[![Coverage Status](https://img.shields.io/badge/coverage-95%25-green)](https://img.shields.io/badge/coverage-95%25-green)
+[![Coverage Status](https://img.shields.io/badge/Coverage-95%25-green)](https://img.shields.io/badge/coverage-95%25-green)
+[![Docs](https://img.shields.io/badge/Typedoc-docs-blue)](https://mtakla.github.io/cronops/)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-orange.svg)](https://www.buymeacoffee.com/nevereven)
 
 **CronOps** is a lightweight, cron-based file management and system task scheduler for containerized environments. It automates copying, moving, archiving, and cleaning up files across mounted volumes — keeping your storage tidy, enabling seamless file exchange between containerized services, and triggering regular tasks in your development, integration or production environments.
 
-> [!WARNING]
-> This project is in early BETA. Production use is not yet recommened!
+> ⚠️ **BETA WARNING**  
+> This project is in early **BETA**. Production use is not yet recommended.
 
 ## 💡 Why CronOps?
 
@@ -83,7 +84,7 @@ target:
 
 Now you can add more job configuration files to `./config/jobs`. For detailes, see [job configuration](#job-configuration) section below.
 
-> [!NOTE]
+> ℹ️ **Note**  
 > You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
 
 ### Using Docker Compose
@@ -132,7 +133,7 @@ To install & start CronOps, type:
 
 
 ```bash
-npx @mtakla/cronops@next
+npx @mtakla/cronops
 ```
 
 For configuration, create an empty folder with an `.env` file that contains your config settings (see [Configuration](#configuration) section below).
@@ -211,8 +212,6 @@ runner.onError((err) => {
 runner.schedule();
 ```
 
-
-
 ## Configuration 
 
 The CronOps service can be configured with the following environment variables:
@@ -260,8 +259,7 @@ enabled: false
 ```
 
 > [!NOTE]
-You can change the job configuration at any time and the server will hot reload and schedule the new job configuration.  
-Be aware that once the job config has been changed, active running tasks will be terminated and the job will be rescheduled
+You can change the job configuration at any time and the server will hot reload and schedule the new job configuration. Be aware that once the job config has been changed, active running tasks will be (gracefully) terminated and the job will be rescheduled
 
 ### Job Actions
 
