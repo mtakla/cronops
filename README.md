@@ -48,6 +48,7 @@ CronOps is built and optimized to run as a Docker container itself.
 
 ```sh
 docker run \
+  --name cronops \
   -p 8083:8083 \
   -v ./config:/config \
   -v ./data:/io/source \
@@ -132,7 +133,7 @@ This requires [Node.js](https://nodejs.org/) (>= v24) to be installed on your se
 To install & start CronOps, type:
 
 
-```bash
+```sh
 npx @mtakla/cronops
 ```
 
@@ -146,7 +147,7 @@ CROPS_SOURCE_ROOT=./data
 
 To start CronOps with 
 
-```bash
+```sh
 npx @dotenvx/dotenvx run -- npx @mtakla/cronops
 ```
 
@@ -276,10 +277,10 @@ CronOps supports 5 different job actions:
 
 - **`exec`** - Execute a command or script. Use with `command`, `args`, `shell`, and `env` properties
 
-> [!TIP]
-> **Path References**: Use `$1`, `$2`, or `$3` in job paths to reference configured root directories. 
-> For source paths, these map to `CROPS_SOURCE_ROOT`, `CROPS_SOURCE_2_ROOT`, and `CROPS_SOURCE_3_ROOT`. 
-> For target paths, they map to `CROPS_TARGET_ROOT`, `CROPS_TARGET_2_ROOT`, and `CROPS_TARGET_3_ROOT`.
+> 💡 **Tip**
+> Use source/target root variables `$1`, `$2`, or `$3` in job paths to reference configured root directories:
+> - For source paths, these map to `CROPS_SOURCE_ROOT`, `CROPS_SOURCE_2_ROOT`, and `CROPS_SOURCE_3_ROOT`. 
+> - For target paths, they map to `CROPS_TARGET_ROOT`, `CROPS_TARGET_2_ROOT`, and `CROPS_TARGET_3_ROOT`.
 
 ### Job Configuration examples
 
@@ -413,14 +414,14 @@ If the exec action is configured to run on selected `source` files:
 
 ## Security considerations & Trouble shooting
 
-> 🛈 **Note**
+🛈 **Note**
 > It is strongly advised against accessing or modifying the data directly on the host system within Docker's internal volume storage path (typically `/var/lib/docker/volumes/`). 
 
-> ⚠ **WARNING**
+ ⚠ **WARNING**
 > **Hazardous Misconfiguration**
 > 
 > By default, CronOps runs as user/group **1000:1000** to follow a security‑first principle.  
-> You *can* run it as root by setting `PUID=0` and `PGID=0`, but **this is dangerous**.
+> You *can* run it as root by setting `PUID=0` and `PGID=0`, but **this is not recommended and can be dangerous**.
 > 
 > When running as root, bind‑mounted host volumes (source/target directories) may map to critical system paths on the host (e.g. `/etc`, `/var`).  
 > This creates a **high‑risk security scenario**:
