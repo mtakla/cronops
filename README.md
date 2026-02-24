@@ -1,6 +1,6 @@
 # CronOps
 
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://github.com/mtakla/cronops/blob/master/LICENSE)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://github.com/mtakla/cronops/blob/main/LICENSE)
 [![Coverage Status](https://img.shields.io/badge/Coverage-95%25-green)](https://img.shields.io/badge/coverage-95%25-green)
 [![Docs](https://img.shields.io/badge/Typedoc-docs-blue)](https://mtakla.github.io/cronops/)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-orange.svg)](https://www.buymeacoffee.com/nevereven)
@@ -8,7 +8,7 @@
 **CronOps** is a lightweight, cron-based file management and system task scheduler for containerized environments. It automates copying, moving, archiving, and cleaning up files across mounted volumes — keeping your storage tidy, enabling seamless file exchange between containerized services, and triggering regular tasks in your development, integration or production environments.
 
 ⚠ **WARNING**  
-> This project is still under active development. Production use is not yet recommended.
+> This project is under active development. Production use is not yet recommended.
 
 ## Why CronOps?
 
