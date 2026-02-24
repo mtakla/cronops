@@ -2,6 +2,7 @@
 
 ## version 0.1.1
 
+ - ADDED: typedocs available on https://mtakla.github.io/cronops/ 
  - ADDED: pause/resume job scheduling via web api
  - ADDED: Web-API support including openAPI WebUI for testing
  - ADDED: Docker PUID/PGID support to run CronOps with explicit user/group privileges
@@ -11,6 +12,5 @@
  - ADDED: job validation and auto disabling wrong configured jobs
  - ADDED: index.ts allowing to use jobLoader, jobScheduler & jobRunner in js/ts programs
  - CHANGED: jobs configuration split up to single job configuration files organized in `/config/jobs`
- - CHANGED: project renames to @mtakla/cronops
+ - CHANGED: project rename to @mtakla/cronops
  - initial public version
-
