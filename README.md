@@ -7,8 +7,8 @@
 
 **CronOps** is a lightweight, cron-based file management and system task scheduler for containerized environments. It automates copying, moving, archiving, and cleaning up files across mounted volumes — keeping your storage tidy, enabling seamless file exchange between containerized services, and triggering regular tasks in your development, integration or production environments.
 
-> ⚠️ **BETA WARNING**  
-> This project is in early **BETA**. Production use is not yet recommended.
+> ⚠ **WARNING**  
+> This project is still under active development. Production use is not yet recommended.
 
 ## 💡 Why CronOps?
 
@@ -84,8 +84,8 @@ target:
 
 Now you can add more job configuration files to `./config/jobs`. For detailes, see [job configuration](#job-configuration) section below.
 
-> ℹ️ **Note**  
-> You do not need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
+> 🛈 **Note**  
+> You don't need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
 
 ### Using Docker Compose
 
@@ -258,8 +258,8 @@ dry_run: true
 enabled: false
 ```
 
-> [!NOTE]
-You can change the job configuration at any time and the server will hot reload and schedule the new job configuration. Be aware that once the job config has been changed, active running tasks will be (gracefully) terminated and the job will be rescheduled
+> 🛈 **Note**
+> You can change the job configuration at any time and the server will hot reload and schedule the new job  configuration. Be aware that once the job config has been changed, active running tasks will be (gracefully) terminated and the job will be rescheduled
 
 ### Job Actions
 
@@ -413,10 +413,10 @@ If the exec action is configured to run on selected `source` files:
 
 ## Security considerations & Trouble shooting
 
-> [!NOTE]
+> 🛈 **Note**
 > It is strongly advised against accessing or modifying the data directly on the host system within Docker's internal volume storage path (typically `/var/lib/docker/volumes/`). 
 
-> [!WARNING]
+> ⚠ **WARNING**
 > **Hazardous Misconfiguration**
 > 
 > By default, CronOps runs as user/group **1000:1000** to follow a security‑first principle.  
