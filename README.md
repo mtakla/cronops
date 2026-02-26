@@ -46,8 +46,10 @@ All configured via simple, version-controllable ***.yml** based **job definition
 
 CronOps is built and optimized to run as a Docker container itself. 
 
+To download and start
+
 ```sh
-docker run \
+docker run -d \
   --name cronops \
   -p 8083:8083 \
   -v ./config:/config \
@@ -58,7 +60,7 @@ docker run \
   ghcr.io/mtakla/cronops:latest
 ```
 
-To check if the server is running:
+To check if the server is running
 
 ```sh
 docker logs -f cronops
@@ -86,7 +88,14 @@ target:
 Now you can add more job configuration files to `./config/jobs`. For detailes, see [job configuration](#job-configuration) section below.
 
 🛈 **Note**  
-> You don't need to restart the server after changing job files. The server identifies any changes and will hot reload the configuration. If a job configuration is invalid, an appropriate message will appear in the docker logs and the specific job will not be scheduled.
+> You don't need to restart the server after changing job files. The server identifies any changes and will automatcally hot reload the configuration. 
+
+To pull latest release of CronOps
+
+```
+docker pull ghcr.io/mtakla/cronops:latest
+```
+
 
 ### Using Docker Compose
 
@@ -412,8 +421,6 @@ If the exec action is configured to run on selected `source` files:
 | `dry_run`                      | (*Optional*) If `true`, simulate the operation without making actual changes. Source files are never modified in dry-run mode. Default: `false`                             |
 | `verbose`                      | (*Optional*) Enable verbose logging for this job. Default: `false`                                                                                                          |
 | `enabled`                      | (*Optional*) If `false`, the job will not be scheduled. Default: `true`                                                                                                     |
-
-
 
 ## Security considerations 
 

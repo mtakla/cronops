@@ -1,4 +1,3 @@
-import os from "node:os";
 import fsx from "fs-extra";
 import YAML from "yaml";
 import glob from "fast-glob";
@@ -21,7 +20,7 @@ export class JobLoader extends AbstractTask<Job[]> {
 
    constructor(options: LoaderOptions = {}) {
       super("*/8 * * * * *");
-      this.configDir = resolve(options.configDir ?? process.env[ENV.CONFIG_DIR] ?? join(os.homedir(), ".cronops", "config"));
+      this.configDir = resolve(options.configDir ?? process.env[ENV.CONFIG_DIR] ?? "./config");
       this.jobHistory = new FileHistoryModel();
    }
 

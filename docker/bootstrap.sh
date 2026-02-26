@@ -21,10 +21,15 @@ fi
 # resolve username by uid
 user="$(awk -F: -v uid="$uid" '$3==uid {print $1; exit}' /etc/passwd)"
 
-if [ "$(stat -c '%u' /config)" != "$uid" ];  then
-  chown "$uid:$gid" -R /config /data 
-  chown "$uid:$gid" /io/source /io/target
-fi
+# chown on mounted or unmounted /config & /data dir
+for path in /config /data; do
+  [ "$(stat -c '%u' "$path")" != "$uid" ] && chown "$uid:$gid" -R "$path"
+done
+
+# chown on mounted or unmounted /io dirs
+for path in /io /io/source /io/target /io/source2 /io/target2 /io/source3 /io/target3; do
+  [ "$(stat -c '%u' "$path")" != "$uid" ] && chown "$uid:$gid" "$path"
+done
 
 # run command with user
 exec su-exec "$user" "$@"

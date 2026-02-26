@@ -30,6 +30,7 @@ RUN apk add --no-cache \
   openssh-client \
   jq \
   yq \
+  vips \
   miller \
   age \
   lua

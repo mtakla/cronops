@@ -1,6 +1,6 @@
 {
    "name": "@mtakla/cronops",
-   "version": "0.1.1",
+   "version": "0.1.2",
    "description": "Automated cross-container file lifecycle management with cron scheduling",
    "type": "module",
    "author": "mtakla@nevereven",
@@ -86,7 +86,7 @@
       "build": "tsc",
       "build:types": "tsc --declaration",
       "dev": "tsc --sourceMap --inlineSources && node --env-file=.env.local ./dist/server.js",
-      "docker": "docker build --load --target app -t cronops-dev:local .",
+      "docker": "docker build --load --target app -t cronops:local .",
       "docker:docs": "docker build --load --target docs -t cronops-docs:local ."
    }
 }
