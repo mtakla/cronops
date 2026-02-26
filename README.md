@@ -132,14 +132,22 @@ in the same directory where `compose.yaml` has been created.
 
 ### Admin Web-API
 
-To enable **admin Web-API**, just set `CROPS_API_KEY` environment variable. Details, see [Configuration](#configuration) section below.
+By default 
+- the Admin Web-API endoint is available under http://127.0.0.1:8083/api 
+- the OpenAPI UI to easily test or execute admin API calls is available under http://127.0.0.1:8083/docs
+- the OpenAPI specs can be downloaded with `curl -L -o openapi.json http://127.0.0.1:8083/openapi.json`
 
+To use the **Admin Web-API**, define an api key via `CROPS_API_KEY` environment variable. The api key must be a hex‑encoded 256‑bit secret that can e.g. be created via
+
+```sh
+ openssl rand -hex 32
+```
 
 ## Manual installation
 
 This requires [Node.js](https://nodejs.org/) (>= v24) to be installed on your server. 
 
-To install & start CronOps, type:
+To install & start CronOps
 
 
 ```sh
@@ -154,7 +162,7 @@ CROPS_TARGET_ROOT=./data
 CROPS_SOURCE_ROOT=./data
 ```
 
-To start CronOps with 
+Then, start CronOps with 
 
 ```sh
 npx @dotenvx/dotenvx run -- npx @mtakla/cronops
