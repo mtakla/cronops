@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:24-alpine
+      image: node:26-alpine
 
     steps:
       - name: Code checkout
@@ -22,3 +22,7 @@ jobs:
 
       - name: Run Tests
         run: npm run test
+
+      - name: Run Load tests
+        run: npm run loadtest
+
