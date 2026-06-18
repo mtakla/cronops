@@ -26,10 +26,10 @@ for path in /config /data; do
   [ "$(stat -c '%u' "$path")" != "$uid" ] && chown "$uid:$gid" -R "$path"
 done
 
-# chown on mounted or unmounted /io dirs
-for path in /io /io/source /io/target /io/source2 /io/target2 /io/source3 /io/target3; do
-  [ "$(stat -c '%u' "$path")" != "$uid" ] && chown "$uid:$gid" "$path"
-done
+# chown on mounted or unmounted /io dirs (DISABLED)
+# for path in /io/target /io/target2 /io/target3; do
+#  [ "$(stat -c '%u' "$path")" != "$uid" ] && chown "$uid:$gid" "$path"
+# done
 
 # run command with user
 exec su-exec "$user" "$@"

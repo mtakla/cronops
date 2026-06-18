@@ -1,6 +1,6 @@
 {
    "name": "@mtakla/cronops",
-   "version": "0.1.3",
+   "version": "0.1.4-rc1",
    "description": "Automated cross-container file lifecycle management with cron scheduling",
    "type": "module",
    "author": "mtakla@nevereven",

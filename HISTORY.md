@@ -1,5 +1,11 @@
 # CronOps Changelog
 
+# version 0.1.4
+
+- FIXED: docker bootstrap chmod issue on mounted source/target dir
+
+# version 0.1.3
+
 - ADDED: openAPI UI layout improvements
 - ADDED: config `CROPS_UI_PERSIST_AUTH` flag to persist OpenAPI Web UI client auth in local store
 - FIXED: docker uid:gid set to 1000:1000 (as documented)
