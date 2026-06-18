@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import { ENV } from "../types/Options.types.js";
 import type { Task, TaskInfo } from "../types/Task.types.js";
 
-export abstract class AbstractTask<T> implements Task {
+export abstract class AbstractTask<T> implements Task<T> {
    protected cronTask: ScheduledTask;
    protected events = new EventEmitter();
    protected errorCount = 0;
@@ -37,7 +37,7 @@ export abstract class AbstractTask<T> implements Task {
       };
 
       // get timezone from options/ENV or use UTC as default
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? process.env[ENV.TZ] ?? "UTC";
+      const timezone = process.env[ENV.TZ] ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
       // validate cron string
       if (!cron.validate(cronStr)) throw new Error(`Initialization error. Invalid cron string (${cronStr}).`);
@@ -48,7 +48,9 @@ export abstract class AbstractTask<T> implements Task {
 
    /**
     * Abstract method to run the task
-    * @return Promise returns a promise that resolves with the task result T
+    * @abstract
+    * @template {Promise} T - the return type
+    * @returns a promise that resolves with the task result T
     */
    protected abstract run(): Promise<T>;
 
@@ -82,7 +84,7 @@ export abstract class AbstractTask<T> implements Task {
       };
    }
 
-   public execute<T>(): Promise<T> {
+   public execute(): Promise<T> {
       const status = this.cronTask.getStatus();
       if (status === "destroyed") throw new Error("Invalid task state (destroyed)");
       if (status === "running" || this.isRunning) throw new Error("Invalid task state (running)");
@@ -102,7 +104,7 @@ export abstract class AbstractTask<T> implements Task {
       this.events.on("started", cb);
    }
 
-   public onFinished<T>(cb: (result: T) => void) {
+   public onFinished(cb: (result: T) => void) {
       this.events.on("finished", cb);
    }
 

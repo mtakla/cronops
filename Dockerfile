@@ -1,7 +1,7 @@
 # -------------------------------
 # BUILD STAGE
 # -------------------------------
-FROM node:24-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN npm run docs
 # -------------------------------
 # PRODUCTION STAGE
 # -------------------------------
-FROM node:24-alpine AS app
+FROM node:26-alpine AS app
 
 # useful alpine ops addons
 RUN apk add --no-cache \
@@ -52,8 +52,8 @@ ENV CROPS_CONFIG_DIR=/config \
     CROPS_HOST=0.0.0.0 \
     CROPS_PORT=8083 \
     NODE_ENV=production \
-    PUID=1001 \
-    PGID=1001
+    PUID=1000 \
+    PGID=1000
 
 # create folders
 RUN mkdir -p \
@@ -104,11 +104,10 @@ HEALTHCHECK --interval=30s  \
             --retries=2 \
             CMD curl -fsS http://localhost:${CROPS_PORT}/health || exit 1
 
-
-# entrypoint (creates)
+# entrypoint (handles PUID:PGID)
 ENTRYPOINT ["/usr/local/bin/bootstrap.sh"]
 
-# define entry 
+# start server
 CMD ["node", "./dist/server.js"]
 
 # -------------------------------
@@ -116,5 +115,5 @@ CMD ["node", "./dist/server.js"]
 # -------------------------------
 FROM nginx:alpine AS docs
 
-# copy dist files from build stage
+# copy doc files from build stage
 COPY --from=builder /app/build/docs /usr/share/nginx/html

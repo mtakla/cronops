@@ -13,8 +13,7 @@ export type { Job } from "./types/Config.types.js";
 
 /**
  * Creates a `JobLoader` instance to watch and auto-reload job configurations
- * Example:
- * ```js
+ * @example
  * import { createJobLoader } from "@mtakla/cronops";
  *
  * // create runner options
@@ -32,7 +31,6 @@ export type { Job } from "./types/Config.types.js";
  *
  * // schedule job loader and execute immediately
  * jobLoader.schedule(true)
- * ```
  * @param options loader options
  * @returns the created `JobLoader`instance
  */

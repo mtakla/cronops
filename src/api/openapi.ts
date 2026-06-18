@@ -26,7 +26,7 @@ export const openapi = {
                cron: { type: "string", minLength: 1, example: "*/5 * * * *" },
                action: {
                   type: "string",
-                  enum: ["exec", "call", "copy", "move", "delete", "archive"],
+                  enum: ["exec", "copy", "move", "delete", "archive"],
                   example: "copy",
                },
                command: { type: "string" },
@@ -95,11 +95,11 @@ export const openapi = {
       },
       {
          name: "jobs",
-         description: "job related api",
+         description: "Job related api",
       },
       {
          name: "schedule",
-         description: "scheduling api",
+         description: "Scheduling api",
       },
    ],
    paths: {
@@ -123,18 +123,6 @@ export const openapi = {
                         },
                      },
                   },
-               },
-            },
-         },
-      },
-      "/docs": {
-         get: {
-            summary: "OpenApi docs",
-            tags: ["public"],
-            security: [],
-            responses: {
-               "200": {
-                  description: "OK",
                },
             },
          },
@@ -212,9 +200,99 @@ export const openapi = {
             },
          },
       },
+      "/api/pause": {
+         post: {
+            summary: "Pause jobs",
+            tags: ["schedule"],
+            responses: {
+               "200": {
+                  description: "Paused",
+                  content: {
+                     "application/json": {
+                        schema: {
+                           type: "object",
+                           properties: {
+                              paused: { type: "boolean", example: true },
+                              jobs: { type: "number", example: 4 },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         },
+      },
+      "/api/resume": {
+         post: {
+            summary: "Resume paused jobs",
+            tags: ["schedule"],
+            responses: {
+               "200": {
+                  description: "Resumed",
+                  content: {
+                     "application/json": {
+                        schema: {
+                           type: "object",
+                           properties: {
+                              resumed: { type: "boolean", example: true },
+                              jobs: { type: "number", example: 4 },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         },
+      },
+      "/api/pause/{jobId}": {
+         post: {
+            summary: "Pause a job",
+            tags: ["schedule"],
+            parameters: [{ $ref: "#/components/parameters/JobId" }],
+            responses: {
+               "200": {
+                  description: "Paused",
+                  content: {
+                     "application/json": {
+                        schema: {
+                           type: "object",
+                           properties: {
+                              paused: { type: "boolean", example: true },
+                              jobId: { type: "string", example: "job-123" },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         },
+      },
+      "/api/resume/{jobId}": {
+         post: {
+            summary: "Resume a paused job",
+            tags: ["schedule"],
+            parameters: [{ $ref: "#/components/parameters/JobId" }],
+            responses: {
+               "200": {
+                  description: "Resumed",
+                  content: {
+                     "application/json": {
+                        schema: {
+                           type: "object",
+                           properties: {
+                              resumed: { type: "boolean", example: true },
+                              jobId: { type: "string", example: "job-123" },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         },
+      },
       "/api/trigger/{jobId}": {
          post: {
-            summary: "Trigger a job",
+            summary: "Manually trigger a job",
             tags: ["schedule"],
             parameters: [{ $ref: "#/components/parameters/JobId" }],
             responses: {
@@ -239,90 +317,21 @@ export const openapi = {
             },
          },
       },
-      "/api/pause": {
+      "/api/terminate": {
          post: {
-            summary: "Pause jobs",
+            summary: "Triggers gracefully shut down of all scheduled jobs",
             tags: ["schedule"],
             responses: {
                "200": {
-                  description: "Paused",
+                  description: "Terminating",
                   content: {
                      "application/json": {
                         schema: {
                            type: "object",
                            properties: {
-                              paused: { type: "boolean", example: true },
-                              jobs: { type: "number", example: 4 },
+                              terminating: { type: "boolean", example: true },
                            },
-                        },
-                     },
-                  },
-               },
-            },
-         },
-      },
-      "/api/pause/job/{jobId}": {
-         post: {
-            summary: "Pause a job",
-            tags: ["schedule"],
-            parameters: [{ $ref: "#/components/parameters/JobId" }],
-            responses: {
-               "200": {
-                  description: "Paused",
-                  content: {
-                     "application/json": {
-                        schema: {
-                           type: "object",
-                           properties: {
-                              paused: { type: "boolean", example: true },
-                              jobId: { type: "string", example: "job-123" },
-                           },
-                        },
-                     },
-                  },
-               },
-            },
-         },
-      },
-      "/api/resume/job/{jobId}": {
-         post: {
-            summary: "Resume a paused job",
-            tags: ["schedule"],
-            parameters: [{ $ref: "#/components/parameters/JobId" }],
-            responses: {
-               "200": {
-                  description: "Resumed",
-                  content: {
-                     "application/json": {
-                        schema: {
-                           type: "object",
-                           properties: {
-                              resumed: { type: "boolean", example: true },
-                              jobId: { type: "string", example: "job-123" },
-                           },
-                        },
-                     },
-                  },
-               },
-            },
-         },
-      },
-
-      "/api/resume": {
-         post: {
-            summary: "Resume paused jobs",
-            tags: ["schedule"],
-            responses: {
-               "200": {
-                  description: "Resumed",
-                  content: {
-                     "application/json": {
-                        schema: {
-                           type: "object",
-                           properties: {
-                              resumed: { type: "boolean", example: true },
-                              jobs: { type: "number", example: 4 },
-                           },
+                           required: ["terminating"],
                         },
                      },
                   },

@@ -1,6 +1,6 @@
 import glob from "fast-glob";
 import { join } from "node:path";
-import { ensureDir, moveSync, readJSON, writeJSON } from "fs-extra/esm";
+import { ensureDir, readJSON, writeJSON } from "fs-extra/esm";
 import { AbstractTask } from "./AbstractTask.js";
 import { JobRunnerContext } from "../models/JobRunnerContext.js";
 import { closeSync, fsyncSync, openSync, writeSync } from "node:fs";
@@ -9,6 +9,8 @@ import type { JobModel } from "../models/JobModel.js";
 import type { JobRunnerSetup } from "../models/JobRunnerSetup.js";
 import type { RunnerResult, FileHistory } from "../types/Task.types.js";
 import type { Job } from "../types/Config.types.js";
+
+const MAX_ERRORS_BEFORE_PAUSE = 31;
 
 export class JobRunner extends AbstractTask<RunnerResult> {
    public job: JobModel;
@@ -33,9 +35,9 @@ export class JobRunner extends AbstractTask<RunnerResult> {
       const { setup, job, events } = this;
 
       // pause job execution if there are too many errors
-      if (this.errorCount >= 31) {
+      if (this.errorCount >= MAX_ERRORS_BEFORE_PAUSE) {
          this.pause();
-         throw new Error("Too many errors. Job execution disabled!");
+         throw new Error("Too many errors. Job scheduling paused!");
       }
 
       // ensure log dir exists
@@ -77,6 +79,7 @@ export class JobRunner extends AbstractTask<RunnerResult> {
          this.closeLog(logFd, ctx.startTime);
       } catch (err) {
          // close log with error
+         this.errorCount++;
          this.closeLog(logFd, ctx.startTime, err instanceof Error ? err : new Error(String(err)));
       }
 
@@ -129,7 +132,9 @@ export class JobRunner extends AbstractTask<RunnerResult> {
          } catch {}
    }
 
+   /*
    protected renameLog(job: Job, tag: string) {
       moveSync(join(this.setup.logDir, `${job.id}.log`), join(this.setup.logDir, `${job.id}.${tag}.log`));
    }
+      */
 }

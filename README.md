@@ -130,18 +130,24 @@ docker compose pull && docker compose up -d
 
 in the same directory where `compose.yaml` has been created. 
 
-### Admin Web-API
+### Admin API
 
 By default 
-- the Admin Web-API endoint is available under http://127.0.0.1:8083/api 
-- the OpenAPI UI to easily test or execute admin API calls is available under http://127.0.0.1:8083/docs
-- the OpenAPI specs can be downloaded with `curl -L -o openapi.json http://127.0.0.1:8083/openapi.json`
+- the Admin API endoint is available under http://127.0.0.1:8083/api 
+- the OpenAPI UI to easily test or execute Admin API calls is available under http://127.0.0.1:8083/docs
+- the OpenAPI specs can be downloaded with `curl -L http://127.0.0.1:8083/openapi.json`
 
-To use the **Admin Web-API**, define an api key via `CROPS_API_KEY` environment variable. The api key must be a hex‑encoded 256‑bit secret that can e.g. be created via
+To use the **Admin API**, define an api key via `CROPS_API_KEY` environment variable. The api key must be a hex‑encoded 256‑bit secret that can e.g. be created via
 
 ```sh
  openssl rand -hex 32
 ```
+
+By default, the OpenAPI UI (`/docs`) does not remember the API key you enter — it has to be re-entered on every page reload. Setting `CROPS_UI_PERSIST_AUTH=true` makes the UI persist the entered API key in the browser so it survives reloads.
+
+⚠ **WARNING**
+
+`CROPS_UI_PERSIST_AUTH=true` stores your `CROPS_API_KEY` in the browser (local storage) of whoever opens `/docs`. Anyone with access to that browser/profile, or any script able to read its storage (e.g. via an XSS vulnerability), can retrieve the key and make authenticated calls to the Admin API. Only enable this on trusted, single-user machines, never on a shared or public browser, and always serve `/docs` over HTTPS when enabled.
 
 ## Manual installation
 
@@ -154,7 +160,7 @@ To install & start CronOps
 npx @mtakla/cronops
 ```
 
-For configuration, create an empty folder with an `.env` file that contains your config settings (see [Configuration](#configuration) section below).
+For configuration, create an `.env` file in you folder that contains your config settings (see [Configuration](#configuration) section below).
 
 ```dotenv
 CROPS_CONFIG_DIR=./config
@@ -173,10 +179,10 @@ This will ...
 - download the latest version of **dotenvx** and **cronops** 
 - load environment settings defined in the `.env` file
 - create job config directory in `./config` with some example jobs
-- starts the CronOps service
-- the **example job** `[example job]` is active by default and scheduled to run every 5 seconds: 
-  - the job will move files found in `./data/inbox` to `./data/outbox`
-  - in addition, all files moved to `./data/outbox` will be automatically deleted after 30 seconds
+- start the CronOps service
+- the **example job** `[example job]` is active by default and scheduled to run every 5 seconds. It job will  
+  - move files found in `./data/inbox` to `./data/outbox`
+  - cleanup all files moved to `./data/outbox` after 30 seconds
 
 
 You can now add job configuration files to `./config/jobs` directory. Each YAML file in this directory defines a job. The server will hot reload when job files are added, modified, or removed.
@@ -245,16 +251,18 @@ The CronOps service can be configured with the following environment variables:
 | `CROPS_TARGET_2_ROOT` | Path to secondary target directory                                                                                         | `/io/target2`   |
 | `CROPS_SOURCE_3_ROOT` | Path to tertiary source directory                                                                                          | `/io/source3`   |
 | `CROPS_TARGET_3_ROOT` | Path to tertiary target directory                                                                                          | `/io/target3`   |
-| `CROPS_CONFIG_DIR`    | Path to the config directory where job files are located                                                                   | `/config`       |
+| `CROPS_CONFIG_DIR`    | Path to the config directory where job files and scripts are located                                                       | `/config`       |
 | `CROPS_TEMP_DIR`      | Path to temporary folder used for dry-run mode                                                                             | `/data/temp`    |
 | `CROPS_LOG_DIR`       | Path to directory where job logs and file history are stored                                                               | `/data/logs`    |
 | `CROPS_HOST`          | Host address for the admin API server                                                                                      | `0.0.0.0`       |
 | `CROPS_PORT`          | Port for the admin API server                                                                                              | `8083`          |
 | `CROPS_EXEC_SHELL`    | (*Optional*) Default shell for `exec` actions. Can be `false` (no shell), `true` (default shell), or path like `/bin/bash` | `false`         |
 | `CROPS_API_KEY`       | (*Optional*) API key to secure admin API endpoints. Must be a hex‑encoded 256‑bit secret (e.g. 'openssl rand -hex 32')     | -               |
-| `CROPS_BASE_URL`      | (*Optional*) Base URL for admin API and OpenAPI docs                                                                       | -               |
+| `CROPS_BASE_URL`      | (*Optional*) Base URL for admin API and OpenAPI UI if cronops runs behind a reverse proxy                                  | -               |
+| `CROPS_UI_PERSIST_AUTH` | (*Optional*) Persists the API key entered in the OpenAPI UI (`/docs`) across page reloads. See security warning below.  | `false`         |
 | `TZ`                  | (*Optional*) Timezone for cron scheduling (standard timezone format)                                                       | `UTC`           |
-
+| `PUID`                | (*Optional, Docker only*) UID of the user the CronOps server runs as in the docker container                               | `1000`          |
+| `PGID`                | (*Optional, Docker only*) GID of the group the CronOps server runs as in the docker container                              | `1000`          |
 
 ## Job Configuration
 
@@ -263,7 +271,7 @@ Jobs are configured as YAML files in the `CROPS_CONFIG_DIR/jobs` directory. Each
 Example job config  `./config/jobs/example.yaml`
 
 ```yaml
-action: move   # exec|call|copy|move|delete|archive
+action: move   # exec|copy|move|delete|archive
 cron: "*/5 * * * * *"
 source:
   dir: $1/nzbget/config/data/download
@@ -364,9 +372,10 @@ For jobs of action type `exec`, you can use dynamic parameters in your  `command
 | `{jobId}`     | job identifier                                                   |
 | `{sourceDir}` | absolute path to the job source directory                        |
 | `{targetDir}` | absolute path to the job target directory (or CROPS_TARGET_ROOT) |
-| `{scriptDir}` | absolute path to the configured script directory                 |
 | `{tempDir}`   | absolute path to the configured temp directory                   |
 | `{logDir}`    | absolute path to the configured log directory                    |
+| `{scriptDir}` | absolute path to the `config/scripts` directory                  |
+| `{secretDir}` | absolute path to the `config/secrets` directory                  |
 
 
 If the exec action is configured to run on selected `source` files:
@@ -411,7 +420,7 @@ If the exec action is configured to run on selected `source` files:
 
 | Property                       | Description                                                                                                                                                                 |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `action`                       | **Required**. The action to perform. One of: `exec`, `call`, `copy`, `move`, `delete`, `archive`                                                                            |
+| `action`                       | **Required**. The action to perform. One of: `exec`, `copy`, `move`, `delete`, `archive`                                                                            |
 | `cron`                         | (*Optional*) Cron-like scheduling string, e.g., `*/2 * * * *`. See [node-cron](https://nodecron.com/cron-syntax.html) documentation for details. If omitted, job runs once. |
 | `command`                      | (*For `exec`/`call` actions*) Command to execute, e.g., `"node"`, `"/bin/bash"`                                                                                             |
 | `shell`                        | (*Optional*) Shell to use for command execution. Can be `true` (use default shell) or a path to a shell binary                                                              |
@@ -447,7 +456,17 @@ If the exec action is configured to run on selected `source` files:
 > - **System file overwrite**: the container can read, modify, or delete critical host files via mounted paths.
 > - **Host damage through misconfigured mounts**: a wrong bind mount can expose system directories, allowing root inside the container to corrupt or erase host data.
 
+Other than that ...
 
 ## License
 
-CronOps is under [ISC License](https://github.com/mtakla/cronops/blob/master/LICENSE). Made with ❤ in EU
+```
+  _____             _                   _ 
+ | ____|  _ __     (_)   ___    _   _  | |
+ |  _|   | '_ \    | |  / _ \  | | | | | |
+ | |___  | | | |   | | | (_) | | |_| | |_|
+ |_____| |_| |_|  _/ |  \___/   \__, | (_)
+                 |__/           |___/     
+```
+
+CronOps is under [ISC License](https://github.com/mtakla/cronops/blob/main/LICENSE). Made with ❤ in EU

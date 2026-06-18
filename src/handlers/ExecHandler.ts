@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { type ChildProcess, spawn } from "node:child_process";
 import { parse } from "node:path";
 import { JobError } from "../errors/JobError.js";
 import { AbstractHandler } from "./AbstractHandler.js";
@@ -38,6 +38,7 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
 
          let done = false;
          let pid: number | undefined;
+         let child: ChildProcess | undefined;
 
          // resolve commands, args, envs
          const cmd = this.resolveVars(ctx.job.command, vars);
@@ -47,6 +48,7 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
          const finish = (err?: Error) => {
             if (!done) {
                done = true;
+               child?.removeAllListeners();
                if (err) reject(err);
                else {
                   ctx.result.executed++;
@@ -56,12 +58,9 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
             }
          };
 
-         // get log file descriptor
-         const logFd = ctx.getLogFd();
-
          // start process
-         const child = spawn(cmd, args, {
-            stdio: ["ignore", verbose ? logFd : "ignore", verbose ? logFd : "ignore"],
+         child = spawn(cmd, args, {
+            stdio: ["ignore", verbose ? ctx.getLogFd() : "ignore", ctx.getLogFd()],
             shell: ctx.job.shell ?? this.setup.shell,
             env: { ...process.env, ...env },
          });
@@ -74,8 +73,13 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
 
          // handle sub process end
          child.once("close", (code, signal) => {
-            if (code === 0) finish();
-            else finish(new Error(`✖ Subprocess (pid:${pid}) failed (code=${code}, signal=${signal})`));
+            if (signal) {
+               finish(new Error(`Process killed by signal ${signal}`));
+            } else if (code === 0) {
+               finish();
+            } else {
+               finish(new Error(`Process exited with code ${code}`));
+            }
          });
 
          // handle spawn error
@@ -89,6 +93,7 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
          sourceDir: ctx.sourceDir,
          targetDir: ctx.targetDir,
          scriptDir: this.setup.scriptDir,
+         secretDir: this.setup.secretDir,
          tempDir: this.setup.tempDir,
          logDir: this.setup.logDir,
          file: "",
@@ -112,7 +117,8 @@ export class ExecHandler extends AbstractHandler implements ActionHandler {
          CROPS_JOB_ID: vars.jobId,
          CROPS_SOURCE_DIR: ctx.sourceDir,
          CROPS_TARGET_DIR: ctx.targetDir,
-         CROPS_SCRIPT_DIR: vars.scriptDir,
+         CROPS_SCRIPTS_DIR: vars.scriptDir,
+         CROPS_SECRETS_DIR: vars.secretDir,
          CROPS_TEMP_DIR: vars.tempDir,
          CROPS_LOG_DIR: vars.logDir,
          CROPS_DRY_RUN: `${ctx.job.dry_run}`,

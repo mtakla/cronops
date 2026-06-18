@@ -24,66 +24,12 @@ export class JobLoader extends AbstractTask<Job[]> {
       this.jobHistory = new FileHistoryModel();
    }
 
-   protected override async run(): Promise<Job[]> {
-      const result: Job[] = [];
-      const ttime = Date.now();
-      const jobsDir = join(this.configDir, "jobs");
-
-      if (this.firstRun && !fsx.pathExistsSync(jobsDir))
-         // does config exist on first start?
-         try {
-            // copy default config
-            await fsx.copy(join(appDir, "config"), this.configDir);
-         } catch {
-            // nop
-         }
-
-      // scan job config files
-      const entries = await glob(["**/*.yaml"], { cwd: jobsDir });
-
-      // notify listeners
-      this.firstRun = false;
-
-      // loop all found job entries
-      for (const entry of entries) {
-         const jobFile = join(jobsDir, entry);
-         try {
-            const stats = await fsx.stat(jobFile);
-            const { changed, added } = this.jobHistory.updateSourceEntry(entry, [stats.mtimeMs, ttime]);
-            if (changed) {
-               const jobConfig = JobSchema.parse(YAML.parse(await fsx.readFile(jobFile, "utf-8")));
-               const job = { id: entry2id(entry), ...jobConfig } as Job;
-               result.push(job);
-               this.events.emit("job-loaded", job, !added);
-            }
-         } catch (err) {
-            console.log(err);
-            const msg = err instanceof ZodError ? `${err.issues[0]?.message}` : String(err);
-            this.events.emit("job-loader-error", entry, msg);
-         }
-      }
-
-      // cleanup jobHistory and get removed jobs
-      const removedJobs = this.jobHistory.cleanup();
-
-      // remove jobs
-      for (const entry of removedJobs) {
-         this.events.emit("job-deleted", entry2id(entry));
-      }
-
-      // notify loaded listener
-      this.events.emit("loaded", result);
-
-      // return (re)loaded jobs
-      return result;
-   }
-
    public async loadJobs(): Promise<Job[]> {
       return await this.run();
    }
 
    public onceLoaded(cb: (jobs: Job[]) => void) {
-      this.events.on("loaded", cb);
+      this.events.once("loaded", cb);
    }
 
    public onLoadingError(cb: (jobId: string, message: string) => void) {
@@ -96,5 +42,57 @@ export class JobLoader extends AbstractTask<Job[]> {
 
    public onJobDeleted(cb: (jobId: string) => void) {
       this.events.on("job-deleted", cb);
+   }
+
+   protected override async run(): Promise<Job[]> {
+      const jobs: Job[] = [];
+      const ttime = Date.now();
+      const jobsDir = join(this.configDir, "jobs");
+
+      // does config exist on first start?
+      if (this.firstRun && !fsx.pathExistsSync(jobsDir))
+         try {
+            // copy default config
+            await fsx.copy(join(appDir, "config"), this.configDir);
+         } catch {
+            // nop
+         }
+
+      // scan job config files
+      const entries = await glob(["**/*.yaml"], { cwd: jobsDir });
+      this.firstRun = false;
+
+      // loop all found job entries
+      for (const entry of entries) {
+         const jobFile = join(jobsDir, entry);
+         try {
+            const stats = await fsx.stat(jobFile);
+            const exist = entry in this.jobHistory.data;
+            if (this.jobHistory.checkSourceEntry(entry, stats.mtimeMs)) {
+               const jobConfig = JobSchema.parse(YAML.parse(await fsx.readFile(jobFile, "utf-8")));
+               const job = { id: entry2id(entry), ...jobConfig } as Job;
+               jobs.push(job);
+               this.jobHistory.addSourceEntry(entry, [stats.mtimeMs, ttime]);
+               this.events.emit("job-loaded", job, exist);
+            }
+         } catch (err) {
+            const msg = err instanceof ZodError ? `${err.issues[0]?.message}` : String(err);
+            this.events.emit("job-loader-error", entry, msg);
+         }
+      }
+
+      // cleanup jobHistory and get removed jobs
+      const removedJobs = this.jobHistory.cleanup();
+
+      // notify listeners on removed jobs
+      for (const entry of removedJobs) {
+         this.events.emit("job-deleted", entry2id(entry));
+      }
+
+      // notify listeners
+      this.events.emit("loaded", jobs);
+
+      // return (re)loaded jobs
+      return jobs;
    }
 }

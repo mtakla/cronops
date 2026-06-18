@@ -3,6 +3,10 @@ import type { Job } from "./Config.types.js";
 import type { JobModel } from "../models/JobModel.js";
 import type { PermissionModel } from "../models/PermissionModel.js";
 
+/**
+ * @inline
+ */
+
 export type RunnerResult = {
    copied: number;
    deleted: number;
@@ -37,19 +41,20 @@ export type FileHistoryData = {
 export type FileHistory = {
    data: FileHistoryData;
    changed: boolean;
-   updateSourceEntry(path: string, [mtime, atime]: [number, number]): { changed: boolean; added: boolean };
+   checkSourceEntry(path: string, mtimeMs: number): boolean;
+   addSourceEntry(path: string, [mtime, atime]: [number, number]): void;
    addTargetEntry(path: string, [mtime, atime]: [number, number]): void;
    markTargetOutdated(path: string): void;
    cleanup(): string[];
 };
 
-export interface Task {
+export interface Task<T> {
    schedule(runImmediately?: boolean): void;
    unschedule(): void;
-   execute<T>(): Promise<T>;
+   execute(): Promise<T>;
    onScheduled(cb: () => void): void;
    onStarted(cb: () => void): void;
-   onFinished<T>(cb: (result: T) => void): void;
+   onFinished(cb: (result: T) => void): void;
    onError(cb: (error: Error) => void): void;
    gracefulTerminate(timeout: number): void;
 }

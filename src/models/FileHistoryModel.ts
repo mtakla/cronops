@@ -8,7 +8,7 @@ export class FileHistoryModel implements FileHistory {
    public changed: boolean;
 
    // used for cleaning up outdated entries
-   private included = new Set<string>();
+   private checked = new Set<string>();
    private outdated = new Set<string>();
 
    constructor(data: FileHistoryData = { source: {}, target: {} }) {
@@ -16,16 +16,14 @@ export class FileHistoryModel implements FileHistory {
       this.changed = false;
    }
 
-   updateSourceEntry(path: string, entry: [number, number]): { changed: boolean; added: boolean } {
-      const prev = this.data.source[path];
-      const added = prev === undefined;
-      const changed = added || prev[0] !== entry[0];
-      if (changed) {
-         this.data.source[path] = entry;
-         this.changed = true;
-      }
-      this.included.add(path);
-      return { changed, added };
+   checkSourceEntry(path: string, mtimeMs: number): boolean {
+      this.checked.add(path);
+      return !(path in this.data.source && this.data.source[path][0] === mtimeMs);
+   }
+
+   addSourceEntry(path: string, entry: [number, number]) {
+      this.data.source[path] = entry;
+      this.changed = true;
    }
 
    addTargetEntry(path: string, entry: [number, number]) {
@@ -44,10 +42,10 @@ export class FileHistoryModel implements FileHistory {
     * @returns list of files that are not any more matched by glob selector or removed from file system
     */
    cleanup() {
-      const useless = new Set(Object.keys(this.data.source)).difference(this.included);
+      const useless = new Set(Object.keys(this.data.source)).difference(this.checked);
       for (const path of useless) this._removeEntry("source", path);
       for (const path of this.outdated) this._removeEntry("target", path);
-      this.included.clear();
+      this.checked.clear();
       this.outdated.clear();
       return [...useless];
    }

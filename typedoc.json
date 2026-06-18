@@ -16,11 +16,12 @@
     "excludePrivate": true,
     "excludeProtected": true,
     "categorizeByGroup": true,
+    "favicon": "./assets/typedoc.png",
     "sort": [
         "alphabetical"
     ],
     "navigationLinks": {
-        "GitHub": "https://github.com/mtakla/copypoc",
+        "GitHub": "https://github.com/mtakla/cronops",
         "NPM": "https://www.npmjs.com/package/@mtakla/cronops"
     },
     "out": "build/docs"

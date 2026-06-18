@@ -27,6 +27,7 @@ export class JobRunnerSetup implements RunnerOptions {
 
    // additional props
    public readonly scriptDir: string;
+   public readonly secretDir: string;
 
    // helper
    private sourceRootDirs: [string, string, string];
@@ -47,6 +48,7 @@ export class JobRunnerSetup implements RunnerOptions {
       this.gid = options.gid ?? process.env[ENV.PGID] ?? `${process.getgid?.() ?? "0"}`;
       this.shell = options.shell ?? parseShellSettings(process.env[ENV.EXEC_SHELL]) ?? false;
       this.scriptDir = join(this.configDir, "scripts");
+      this.secretDir = join(this.configDir, "secrets");
 
       // helper for quick path resolution
       this.sourceRootDirs = [this.sourceRoot, this.source2Root, this.source3Root];

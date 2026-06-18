@@ -1,0 +1,16 @@
+action: exec
+cron: "* * * * *"
+command: scp
+args:
+  - "-i"
+  - "{secretDir}/id_ed25519"
+  - "{file}"
+  - "john.doe@example.server.de:/upload"
+source:
+  dir: /job5
+  includes:
+    - "**/**"
+  excludes:
+    - "**/.*"
+    - "**/*.log"
+enabled: false

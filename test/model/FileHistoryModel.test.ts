@@ -18,49 +18,35 @@ describe(FileHistoryModel.name, () => {
       expect(history.changed).toBe(false);
    });
 
-   it("updateSourceEntry() with new entry should work", () => {
+   it("checkSourceEntry() on new entry should work", () => {
       const history = new FileHistoryModel();
-      const { changed, added } = history.updateSourceEntry("/foo/source", [1, 2]);
+      const changed = history.checkSourceEntry("/foo/source", 1);
+      expect(changed).toBe(true);
+   });
+
+   it("checkSourceEntry() on existing entry should should work", () => {
+      const history = new FileHistoryModel({
+         source: { "/foo/source": [1, 2] },
+         target: {},
+      });
+      const changed = history.checkSourceEntry("/foo/source", 1);
+      expect(changed).toBe(false);
+   });
+
+   it("checkSourceEntry() on outdated existing entry should work", () => {
+      const history = new FileHistoryModel({
+         source: { "/foo/source": [1, 2] },
+         target: {},
+      });
+      const changed = history.checkSourceEntry("/foo/source", 2);
+      expect(changed).toBe(true);
+   });
+
+   it("addSourceEntry() on empty sources should work", () => {
+      const history = new FileHistoryModel();
+      history.addSourceEntry("/foo/source", [1, 2]);
       expect(history.data.source).toEqual({ "/foo/source": [1, 2] });
       expect(history.changed).toBe(true);
-      expect(changed).toBe(true);
-      expect(added).toBe(true);
-   });
-
-   it("updateSourceEntry() with identical entry should work", () => {
-      const history = new FileHistoryModel({
-         source: { "/foo/source": [1, 2] },
-         target: {},
-      });
-      const { changed, added } = history.updateSourceEntry("/foo/source", [1, 2]);
-      expect(history.data.source).toEqual({ "/foo/source": [1, 2] });
-      expect(history.changed).toBe(false);
-      expect(changed).toBe(false);
-      expect(added).toBe(false);
-   });
-
-   it("updateSourceEntry() with newer entry should work", () => {
-      const history = new FileHistoryModel({
-         source: { "/foo/source": [1, 2] },
-         target: {},
-      });
-      const { changed, added } = history.updateSourceEntry("/foo/source", [11, 2]);
-      expect(history.data.source).toEqual({ "/foo/source": [11, 2] });
-      expect(history.changed).toBe(true);
-      expect(changed).toBe(true);
-      expect(added).toBe(false);
-   });
-
-   it("updateSourceEntry() with updated entry should work", () => {
-      const history = new FileHistoryModel({
-         source: { "/foo/source": [1, 2] },
-         target: {},
-      });
-      const { changed, added } = history.updateSourceEntry("/foo/source", [1, 22]);
-      expect(history.data.source).toEqual({ "/foo/source": [1, 2] });
-      expect(history.changed).toBe(false);
-      expect(changed).toBe(false);
-      expect(added).toBe(false);
    });
 
    it("addTargetEntry() on empty targets should work", () => {
@@ -83,7 +69,7 @@ describe(FileHistoryModel.name, () => {
          source: { "/src/included": [1, 2] },
          target: {},
       });
-      history.updateSourceEntry("/src/included", [1, 2]);
+      history.checkSourceEntry("/src/included", [1, 2]);
       history.addTargetEntry("/dest/foo", [1, 2]);
       expect(Object.keys(history.data.source)).toHaveLength(1);
       expect(Object.keys(history.data.target)).toHaveLength(1);

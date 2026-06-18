@@ -22,7 +22,7 @@ beforeEach(async () => {
 describe(JobScheduler.name, () => {
    it("constructor should work", () => {
       const scheduler = new JobScheduler(setup);
-      expect(scheduler.scheduledJobs).toBe(0);
+      expect(scheduler.scheduledJobCount).toBe(0);
    });
 
    it("scheduling empty job list should not fail", async () => {
@@ -30,7 +30,7 @@ describe(JobScheduler.name, () => {
       const cbScheduled = vi.fn();
       scheduler.scheduleJobs([], cbScheduled);
       await vi.waitFor(() => {
-         expect(scheduler.scheduledJobs).toBe(0);
+         expect(scheduler.scheduledJobCount).toBe(0);
          expect(cbScheduled).toBeCalledWith(0);
          scheduler.unscheduleAll();
       });
@@ -55,7 +55,7 @@ describe(JobScheduler.name, () => {
       scheduler.onJobScheduled(cbJobScheduled);
       scheduler.scheduleJob({ id: "job1", action: "copy", source: { dir: "/" }, target: { dir: "/" } });
       await vi.waitFor(() => {
-         expect(scheduler.scheduledJobs).toBe(1);
+         expect(scheduler.scheduledJobCount).toBe(1);
          expect(scheduler.isJobScheduled("job1")).toBe(true);
          expect(cbJobScheduled).toBeCalledTimes(1);
          scheduler.unscheduleAll();
@@ -96,7 +96,7 @@ describe(JobScheduler.name, () => {
          cbScheduled,
       );
       await vi.waitFor(() => {
-         expect(scheduler.scheduledJobs).toBe(2);
+         expect(scheduler.scheduledJobCount).toBe(2);
          expect(scheduler.isJobScheduled("job1")).toBe(false);
          expect(scheduler.isJobScheduled("job2")).toBe(true);
          expect(scheduler.isJobScheduled("job3")).toBe(true);
@@ -161,6 +161,6 @@ describe(JobScheduler.name, () => {
       scheduler.scheduleJobs([{ id: "job1", action: "archive", source: {}, target: {} }]);
       await scheduler.gracefulTerminate(1000);
       expect(scheduler.isJobScheduled("job1")).toBe(false);
-      expect(scheduler.scheduledJobs).toBe(0);
+      expect(scheduler.scheduledJobCount).toBe(0);
    });
 });

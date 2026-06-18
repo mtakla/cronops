@@ -12,7 +12,7 @@ import { FileHistoryModel } from "../../src/models/FileHistoryModel.js";
 import { JobError } from "../../src/errors/JobError.js";
 
 const workDir = resolve("./build/test/ExecHandler");
-const scriptsDir = resolve("./test/fixtures/scripts");
+const scriptDir = resolve("./test/fixtures/scripts");
 const sourceRoot = resolve("./test/fixtures");
 const configDir = resolve("./test/fixtures");
 const nodeExec = process.argv[0];
@@ -49,7 +49,7 @@ describe(ExecHandler.name, () => {
          command: `${nodeExec}`,
          verbose: true,
          env: { CROPS_TEST: "true" },
-         args: [`${join(scriptsDir, "exec-ok.js")}`],
+         args: [`${join(scriptDir, "exec-ok.js")}`],
       });
       const handler = new ExecHandler(setup);
       await handler.process(ctx);
@@ -62,7 +62,7 @@ describe(ExecHandler.name, () => {
          id: "exec-ok-shell",
          action: "exec",
          shell: true,
-         command: `node ${join(scriptsDir, "exec-ok.js")}`,
+         command: `node ${join(scriptDir, "exec-ok.js")}`,
          env: { CROPS_TEST: "true" },
       });
       const handler = new ExecHandler(setup);
@@ -75,7 +75,7 @@ describe(ExecHandler.name, () => {
       const ctx = createRunnerContext(setup, {
          id: "test-fail-errorcode",
          action: "exec",
-         command: `node ${join(scriptsDir, "exec-fail-errorcode.js")}`,
+         command: `node ${join(scriptDir, "exec-fail-errorcode.js")}`,
       });
       const handler = new ExecHandler(setup);
       await expect(handler.process(ctx)).rejects.toThrow();
@@ -87,7 +87,7 @@ describe(ExecHandler.name, () => {
       const ctx = createRunnerContext(setup, {
          id: "exec-fail-exception",
          action: "exec",
-         command: `node ${join(scriptsDir, "exec-fail-exception.js")}`,
+         command: `node ${join(scriptDir, "exec-fail-exception.js")}`,
       });
       const handler = new ExecHandler(setup);
       await expect(handler.process(ctx)).rejects.toThrow();

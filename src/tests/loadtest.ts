@@ -86,6 +86,8 @@ const jobs: Job[] = [
 
 // create job scheduler instance
 const scheduler = createJobScheduler({
+   sourceRoot: "./",
+   targetRoot: "./",
    logDir: "./build/loadtest",
 });
 

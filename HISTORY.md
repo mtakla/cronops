@@ -1,5 +1,10 @@
 # CronOps Changelog
 
+- ADDED: openAPI UI layout improvements
+- ADDED: config `CROPS_UI_PERSIST_AUTH` flag to persist OpenAPI Web UI client auth in local store
+- FIXED: docker uid:gid set to 1000:1000 (as documented)
+- Bump up to latest node version 26.x
+
 ## version 0.1.2
 
 - FIXED: issue with local installation and config dir 

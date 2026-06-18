@@ -62,12 +62,15 @@ export abstract class AbstractHandler implements ActionHandler {
                   const stats = await fsx.stat(sourcePath);
 
                   // if file history is used, update source entry if not already tracked
-                  const { changed } = fileHistory ? fileHistory.updateSourceEntry(sourcePath, [stats.mtimeMs, ctx.startTime]) : { changed: true };
+                  const changed = fileHistory ? fileHistory.checkSourceEntry(sourcePath, stats.mtimeMs) : true;
 
                   // only process new or changed files
-                  if (changed && processor) await processor.bind(this)(ctx, { sourceEntry, sourcePath, stats }, fileHistory);
+                  if (changed && processor) {
+                     await processor.bind(this)(ctx, { sourceEntry, sourcePath, stats }, fileHistory);
+                     if (fileHistory) fileHistory.addSourceEntry(sourcePath, [stats.mtimeMs, ctx.startTime]);
+                  }
                } catch (error) {
-                  ctx.processError(new Error(`Cannot process source entry '${sourceEntry}'.\n └─ ${String(error)}`));
+                  ctx.processError(new Error(`Cannot process source entry '${sourceEntry}'!\n └─ ${String(error)}`));
                }
             });
          }),

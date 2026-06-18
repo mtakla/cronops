@@ -66,10 +66,9 @@ export async function start() {
       const jobs = jobScheduler.getScheduledJobsInfo();
       console.log(`\nJob config ${isReload ? "changed" : "loaded"}`);
       for (const job of jobs) {
-         if (job.status !== "paused") console.log(` 🕔 [${job.id}] scheduled (${chalk.greenBright(job.cron)})${job.dry_run ? " 👋 DRY-RUN mode!" : ""}`);
-      }
-      for (const job of jobs) {
-         if (job.status === "paused") console.log(` ⚫ [${job.id}] inactive`);
+         if (job.status === "scheduled" || job.status === "running") {
+            console.log(` 🕔 [${job.id}] scheduled (${chalk.greenBright(job.cron)})${job.dry_run ? " 👋 DRY-RUN mode!" : ""}`);
+         } else console.log(` ⚫ [${job.id}] inactive`);
       }
    });
 

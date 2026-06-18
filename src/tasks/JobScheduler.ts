@@ -20,34 +20,12 @@ export class JobScheduler extends AbstractTask<void> {
       this.runnerMap = new Map();
    }
 
-   get scheduledJobs(): number {
+   get scheduledJobCount(): number {
       return this.runnerMap.size;
    }
 
    get tempDir(): string {
       return this.runnerSetup.tempDir;
-   }
-
-   protected override async run(): Promise<void> {
-      if (this.changed) {
-         this.changed = false;
-         this.events.emit("schedule-changed", this.isReload);
-         this.isReload = true;
-      }
-   }
-
-   public pauseAll() {
-      for (const runner of this.runnerMap.values()) runner.resume();
-   }
-
-   public resumeAll() {
-      for (const runner of this.runnerMap.values()) runner.resume();
-   }
-
-   public unscheduleAll() {
-      for (const runner of this.runnerMap.values()) runner.unschedule();
-      this.runnerMap = new Map<string, JobRunner>();
-      this.changed = true;
    }
 
    public scheduleJobs(jobs: Job[], cb?: (count: number) => void) {
@@ -91,13 +69,16 @@ export class JobScheduler extends AbstractTask<void> {
       task.onActivity((activity: string, path: string, count?: number) => this.events.emit("job-activity", job, activity, path, count));
       task.onError((err: Error) => this.events.emit("job-error", job, err));
 
-      // start cron scheduler for this job
-      task.schedule();
-
-      // if job is disabled => pause job execution
-      if (job.enabled === false) task.pause();
+      // if job is not disabled -> start cron scheduler for this job
+      if (job.enabled !== false) task.schedule();
 
       // mark as changed
+      this.changed = true;
+   }
+
+   public unscheduleAll() {
+      for (const runner of this.runnerMap.values()) runner.unschedule();
+      this.runnerMap = new Map<string, JobRunner>();
       this.changed = true;
    }
 
@@ -225,5 +206,13 @@ export class JobScheduler extends AbstractTask<void> {
     */
    public onJobError(cb: (job: Job, err: Error) => void) {
       this.events.on("job-error", cb);
+   }
+
+   protected override async run(): Promise<void> {
+      if (this.changed) {
+         this.changed = false;
+         this.events.emit("schedule-changed", this.isReload);
+         this.isReload = true;
+      }
    }
 }

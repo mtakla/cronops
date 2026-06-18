@@ -1,3 +1,6 @@
+/**
+ * @inline
+ */
 export type RunnerOptions = {
    /**
     * Configuration directory where `./jobs` and `./scripts` are located.
@@ -69,6 +72,9 @@ export type RunnerOptions = {
    gid?: string;
 };
 
+/**
+ * @inline
+ */
 export type LoaderOptions = {
    /**
     * Configuration directory where `./jobs` and `./scripts` are located.
@@ -90,11 +96,15 @@ export const ENV = {
    EXEC_SHELL: "CROPS_EXEC_SHELL",
    PLIMIT_SPAWN: "CROPS_PLIMIT_SPAWN", // 16 default (number of parallel sub-process executions) // TODO
    PLIMIT_FS: "CROPS_PLIMIT_FS", // 120 default (number of parallel file system operations)  // TODO
+   UI_PERSIST_AUTH: "CROPS_UI_PERSIST_AUTH",
    API_KEY: "CROPS_API_KEY",
+   API_KEY_FILE: "CROPS_API_KEY_FILE", //TODO
+   ENCRYPTION_KEY: "CROPS_ENCRYPTION_KEY",
+   ENCRYPTION_KEY_FILE: "CROPS_ENCRYPTION_KEY_FILE", //TODO
    BASE_URL: "CROPS_BASE_URL",
    HOST: "CROPS_HOST",
    PORT: "CROPS_PORT",
    PUID: "PUID",
    PGID: "PGID",
-   TZ: "TG",
+   TZ: "TZ",
 } as const;
